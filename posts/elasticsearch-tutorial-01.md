@@ -1,17 +1,15 @@
-# The Elasticsearch Tutorial
+# The Elasticsearch Tutorial: Part 1, Full Search
 
 These will be notes from doing the [elasticsearch tutorial](https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome).  This will be written as I go so that you can go on this `journey` with me.
 
 What am I going to learn?  According to the tutorial:
 
-```text
 - How to perform full-text keyword searches on a dataset, optionally with filters
 - How to generate, store and search dense vector embeddings using a Machine Learning model
 - How to use the ELSER model to generate and search sparse vectors
 - How to combine search results from the methods listed above using Elastic's Reciprocal Rank Fusion (RRF) algorithm
-```
 
-Huh, neat.  Full-text keyword searches is what I generally think of when I see Elastisearch, and I know very little about dense vector embeddings right now &emdash; let alone how I'd generate, store, and search them!  I have zero familiarity with the ELSER model but I'm guessing that the "ELS" is for "Elastic Search".  The RRF algorithm sounds vaguely like the page-rank algorithm but I'll see when I get to it.
+Huh, neat.  Full-text keyword searches is what I generally think of when I see Elastisearch, and I know very little about dense vector embeddings right now &mdash; let alone how I'd generate, store, and search them!  I have zero familiarity with the ELSER model but I'm guessing that the "ELS" is for "Elastic Search".  The RRF algorithm sounds vaguely like the page-rank algorithm but I'll see when I get to it.
 
 ## Setting Things up for the Tutorial
 
@@ -25,7 +23,7 @@ It's a flask app which appears to function as a frontend for querying and gettin
 
 ```json
 {
-  "content": "Effective: March 2020\nPurpose\n\nThe purpose of this full-time work-from-home policy is to provide guidelines [...]",
+  "content": "Effective: March 2020\nPurpose\n\nThe purpose of this full-time work-from-home policy is to provide guidelines ...",
   "name": "Work From Home Policy",
     "url": "./sharepoint/Work from home policy.txt",
     "created_on": "2020-03-01",
@@ -61,7 +59,8 @@ es = Search()
 This gives me the following response:
 
 ```text
-elastic_transport.ConnectionError: Connection error caused by: ConnectionError(Connection error caused by: ProtocolError(('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))))
+elastic_transport.ConnectionError: Connection error caused by: ConnectionError(Connection error caused by: ProtocolError
+(('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))))
 ```
 
 Oh, I bet I need to use `https` to talk to ES.  Since I don't want to deal with all the certificate stuff right now, and since this is _not_ a production application, I went into the docker compose file and commented out everything that looked SSL-y to me.  I `docker compose up` and I'm good to go.
@@ -70,7 +69,21 @@ The same code now gives me:
 
 ```text
 Connected to Elasticsearch!
-{'name': 'es01', 'cluster_name': 'docker-cluster', 'cluster_uuid': 'quQ8sGbMRhO80D5nUlDRPw', 'version': {'number': '8.12.1', 'build_flavor': 'default', 'build_type': 'docker', 'build_hash': '6185ba65d27469afabc9bc951cded6c17c21e3f3', 'build_date': '2024-02-01T13:07:13.727175297Z', 'build_snapshot': False, 'lucene_version': '9.9.2', 'minimum_wire_compatibility_version': '7.17.0', 'minimum_index_compatibility_version': '7.0.0'}, 'tagline': 'You Know, for Search'}
+{
+  'name': 'es01',
+  'cluster_name': 'docker-cluster',
+  'cluster_uuid': 'quQ8sGbMRhO80D5nUlDRPw',
+  'version': {'number': '8.12.1',
+  'build_flavor': 'default',
+  'build_type': 'docker',
+  'build_hash': '6185ba65d27469afabc9bc951cded6c17c21e3f3',
+  'build_date': '2024-02-01T13:07:13.727175297Z',
+  'build_snapshot': False,
+  'lucene_version': '9.9.2',
+  'minimum_wire_compatibility_version': '7.17.0',
+  'minimum_index_compatibility_version': '7.0.0'},
+  'tagline': 'You Know, for Search'
+}
 ```
 
 Great!  The `elasticsearch.Elasticsearch()` class is a client class which takes a host as its first parameter. I can make sure it connected to a cluster with the `.info()` method.  
@@ -103,7 +116,13 @@ es.create_index()
 The `ignore_unavailable=True` functions like the `IF EXISTS` in SQL: if ES can't find the index it ignores the delete command.  After executing my code, the docker logs give me:
 
 ```text
-elasticsearch-es02-1    | {"@timestamp":"2024-02-24T07:51:59.436Z", "log.level": "INFO", "message":"[my_documents] creating index, cause [api], templates [], shards [1]/[1]", 
+{
+  "@timestamp":"2024-02-24T07:51:59.436Z",
+  "log.level": "INFO",
+  "message":"[my_documents] creating index,
+  cause [api],
+  templates [],
+  shards [1]/[1]",
 ...
 ```
 
@@ -174,9 +193,7 @@ Which returns the following:
         }
       }
     },
-    "settings": {
-      ...
-    }
+    ...
   }
 }
 ```
@@ -260,8 +277,16 @@ es.search(
 
 Running this returns:
 
-```text
-{'took': 57, 'timed_out': False, '_shards': {'total': 1, 'successful': 1, 'skipped': 0, 'failed': 0}, 'hits': {'total': {'value': 0, 'relation': 'eq'}, 'max_score': None, 'hits': []}}
+```json
+...
+"hits": {
+  "total": {
+    "value": 0, "relation": "eq"
+  }, 
+  "max_score": None, 
+  "hits": []
+}
+...
 ```
 
 Well, that makes sense, since "search text here" isn't going to match anything in our documents.  Since I'll be using the match query a bit, I decided to make it a method:
@@ -280,8 +305,7 @@ Running this with the query `"work from home"` gives me a huge output.  The fiel
 
 There is also a way to match queries in different fields called _multi\_match_.  The query looks like this:
 
-```text
-GET /_search
+```json
 {
   "query": {
     "multi_match" : {
@@ -317,7 +341,7 @@ Not much else going on here, so I'll move on.
 
 The structure of the booleans, even after reading the tutorial page, was a bit fuzzy to me.  I looked up [an example](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html) which gives the gist of it:
 
-```text
+```json
 {
   "query": {
     "bool" : {
@@ -345,7 +369,7 @@ The structure of the booleans, even after reading the tutorial page, was a bit f
 
 Looks complicated at first, but if we cut out some of the outer fields it becomes a bit easier to read.  Everything is nested in the `query > bool` fields, so I'll get rid of those:
 
-```text
+```json
 "must" : {
     "term" : { "user.id" : "kimchy" }
 },
