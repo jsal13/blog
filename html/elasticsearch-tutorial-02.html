@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Elasticsearch Tutorial: Part 2, Vector Search</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pygmentize.css">
+
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+</head>
+
+<body>
+
+    
+
+    <div id="post-content">
+        <h1>The Elasticsearch Tutorial: Part 2, Vector Search</h1>
+<p>Last Updated: <em>2024-02-25</em></p>
+<hr />
+<p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
+<p>What am I going to learn this time?  According to the tutorial:</p>
+<blockquote>
+<ul>
+<li>This section will introduce you to a different way of searching that leverages Machine Learning (ML) techniques to interpret meaning and context.</li>
+</ul>
+</blockquote>
+<p>Last time I learned some basic querying techniques which ultimately used regex-style matching and filtering; it seems that this time I'll be doing some sweet, sweet machine learning!</p>
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-02_decision_tree.jpg"
+         alt="A decision tree.">
+    <figcaption>A decision tree.</figcaption>
+</figure>
+
+<h2>Embeddings</h2>
+<p>The tutorial defines the term <strong>embedding</strong> as</p>
+<blockquote>
+<p>a vector (an array of numbers) that represents real-world objects such as words, sentences, images or videos.</p>
+</blockquote>
+<p>There'll no doubt be some examples soon if you haven't seen this kind of thing before.  One cool thing you can do with embeddings is define and then calculate <strong>distances</strong> between them.  This is done in a similar way as you might do in school:</p>
+<p>$$
+\begin{array}{ll}
+A &amp;= (0, 0, 1)\\
+B &amp;= (0, 1, 0)\\
+d(A, B) &amp;= \sqrt{(0 - 0)^2 + (0 - 1)^2 + (1 - 0)^2} = \sqrt{2}\\
+\end{array}
+$$</p>
+<p>For \(d(A, B)\) I used a Euclidean distance, but any <a href="https://en.wikipedia.org/wiki/Distance#Mathematical_formalization">distance function</a> would work equally well.</p>
+<p>Why do I care about finding the distances between embeddings?  This might tell them if the two terms (or pictures, or videos, or whatever) are <em>similar</em> to each other in some respect.</p>
+<p>The tutorial goes on and tells me that I'll use embeddings to help find concepts that are similar to one-another instead of using the keyword searching I've been doing so far.</p>
+<h2>Generating Embeddings</h2>
+<p>As soon as I get onto the next page of the tutorial, it tells me to go install <a href="https://www.sbert.net/">SentenceTransformers</a>.  I've heard of this before but haven't worked with it.</p>
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-02_nvidia.png"
+         alt="NVIDIA installin'.">
+    <figcaption>Every time I see pip installing something with NVIDIA I hold my breath and hope it works.</figcaption>
+</figure>
+
+<p>Next, the tutorial tells me to select a pre-trained model.  Sure, that's reasonable, I don't want to have to spend all my time training this thing &mdash; and I almost certainly don't have enough data to train it on!  The tutorial recommends the <code>all-MiniLM-L6-v2</code> model on <a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">huggingface</a> and I have no strong opposition.</p>
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-02_model_tags.png"
+         alt="Model Tags.">
+    <figcaption>Wow, trivia qa <b>and</b> yahoo answers?</figcaption>
+</figure>
+    </div>
+</body>
+
+</html>

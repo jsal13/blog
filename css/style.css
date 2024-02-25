@@ -1,0 +1,37 @@
+#post-content {
+    max-width: 600px;
+    margin-left: 1rem;
+}
+
+blockquote {
+    background: #eff3fd;
+    border-left: 6px solid #ccc;
+    margin: 1.5em 10px;
+    padding: 0.5em 10px;
+}
+
+blockquote p {
+    display: inline;
+}
+
+img {
+    max-width: 600px;
+    border: 1px solid #dddddd;
+    border-radius: 0.25rem;
+}
+
+figcaption {
+    font-style: italic;
+    text-align: center;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+figure {
+    border: 1px solid #eeeeee;
+    border-radius: 0.25rem;
+    background: #fafafa;
+    width: 100%;
+    margin-top: 1.75rem;
+    margin-bottom: 1.75rem;
+}

@@ -84,7 +84,7 @@ if __name__ == "__main__":
     if not DEST_PATH.exists():
         os.makedirs(DEST_PATH)
 
-    file_paths = glob.glob("posts/*.md")
+    file_paths = glob.glob("md/*.md")
     converter = Converter(file_paths=file_paths)
     converter.convert_all_md_to_html()
     converter.create_index_html()
