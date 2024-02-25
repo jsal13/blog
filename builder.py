@@ -7,7 +7,7 @@ import re
 import markdown
 
 TEMPLATE_PATH = Path("template.html")
-DEST_PATH = Path("_build")
+DEST_PATH = Path("html")
 
 
 @dataclass
