@@ -4,10 +4,10 @@ These will be notes from doing the [elasticsearch tutorial](https://www.elastic.
 
 What am I going to learn?  According to the tutorial:
 
-- How to perform full-text keyword searches on a dataset, optionally with filters
-- How to generate, store and search dense vector embeddings using a Machine Learning model
-- How to use the ELSER model to generate and search sparse vectors
-- How to combine search results from the methods listed above using Elastic's Reciprocal Rank Fusion (RRF) algorithm
+> - How to perform full-text keyword searches on a dataset, optionally with filters,
+> - How to generate, store and search dense vector embeddings using a Machine Learning model,
+> - How to use the ELSER model to generate and search sparse vectors,
+> - How to combine search results from the methods listed above using Elastic's Reciprocal Rank Fusion (RRF) algorithm,
 
 Huh, neat.  Full-text keyword searches is what I generally think of when I see Elastisearch, and I know very little about dense vector embeddings right now &mdash; let alone how I'd generate, store, and search them!  I have zero familiarity with the ELSER model but I'm guessing that the "ELS" is for "Elastic Search".  The RRF algorithm sounds vaguely like the page-rank algorithm but I'll see when I get to it.
 
@@ -23,14 +23,14 @@ It's a flask app which appears to function as a frontend for querying and gettin
 
 ```json
 {
-  "content": "Effective: March 2020\nPurpose\n\nThe purpose of this full-time work-from-home policy is to provide guidelines ...",
+  "content": "Effective: March 2020\nPurpose\n\n...",
   "name": "Work From Home Policy",
     "url": "./sharepoint/Work from home policy.txt",
     "created_on": "2020-03-01",
     "updated_at": "2020-03-01",
     "category": "teams",
     "rolePermissions": ["demo", "manager"]
-}, ...
+}
 ```
 
 I've truncated the string in "content" so it would fit here.  Awesome, sample data!
@@ -59,8 +59,9 @@ es = Search()
 This gives me the following response:
 
 ```text
-elastic_transport.ConnectionError: Connection error caused by: ConnectionError(Connection error caused by: ProtocolError
-(('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))))
+elastic_transport.ConnectionError: Connection error caused by: ConnectionError
+(Connection error caused by: ProtocolError (('Connection aborted.', 
+RemoteDisconnected('Remote end closed connection without response'))))
 ```
 
 Oh, I bet I need to use `https` to talk to ES.  Since I don't want to deal with all the certificate stuff right now, and since this is _not_ a production application, I went into the docker compose file and commented out everything that looked SSL-y to me.  I `docker compose up` and I'm good to go.
@@ -130,11 +131,7 @@ That tells me that our index creation worked.  Let's add a document to this inde
 
 ```python
 class Search:
-    def __init__(self):
-        ...
-
-    def create_index(self):
-        ...
+    ...
 
     def insert_document(self, document):
         return self.es.index(index="my_documents", body=document)
@@ -157,7 +154,9 @@ This outputs the associated response ID and shows that it has, indeed, inserted 
 Does the index now have an associated schema?  In the [docs](https://elasticsearch-py.readthedocs.io/en/v8.12.1/api/elasticsearch.html) it shows we can use `client.indices.get(index="*")` to get the Index API.  Let's try it out.
 
 ```python
+class Search:
     ...
+    
     def index_info(self):
         return self.es.indices.get(index="*")
 ```
@@ -193,7 +192,6 @@ Which returns the following:
         }
       }
     },
-    ...
   }
 }
 ```
@@ -203,14 +201,14 @@ It looks like our fields are in `my_documents > mappings > properties`.  I'm not
 The tutorial tells us that, while I _can_ ingest documents this way, realistically I will want to use the `bulk` method to ingrest a bunch of documents at once.  Makes sense to me.  I'll plop it in the `Search` class:
 
 ```python
-...
+class Search:
+    ...
     def insert_documents(self, documents):
             operations = []
             for document in documents:
                 operations.append({'index': {'_index': 'my_documents'}})
                 operations.append(document)
             return self.es.bulk(operations=operations)
-...
 ```
 
 The rest of this section is about how to use the flask app with all of this.  I'll ignore it since I'm not going to use the included flask app.
@@ -257,6 +255,9 @@ Note that the `sample-data.json` is the data that was included in the tutorial's
 The search method will also sit in the `Search` class and looks like this:
 
 ```python
+class Search:
+    ...
+
     def search(self, **query_args):
         return self.es.search(index='my_documents', **query_args)
 ```
@@ -275,30 +276,29 @@ es.search(
 )
 ```
 
-Running this returns:
+Running this returns a whole big JSON of things; the "hits" portion gives me what I want to see:
 
 ```json
-...
 "hits": {
   "total": {
     "value": 0, "relation": "eq"
   }, 
-  "max_score": None, 
+  "max_score": null, 
   "hits": []
 }
-...
 ```
 
-Well, that makes sense, since "search text here" isn't going to match anything in our documents.  Since I'll be using the match query a bit, I decided to make it a method:
+Well, that makes sense, since "search text here" isn't going to match anything in my documents.  Since I'll be using the match query a bit, I decided to make it a method:
 
 ```python
+class Search:
     ...
+
     def search(self, **query_args):
         return self.es.search(index="my_documents", **query_args)
 
     def match_search(self, text):
         return self.search(query={"match": {"name": {"query": text}}})
-    ...
 ```
 
 Running this with the query `"work from home"` gives me a huge output.  The fields for the response can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html#search-api-response-body), but it includes the text the search term was found in and the _document id_.  This document id can be used with `self.es.get(index='my_documents', id=id)` to return the document itself.
@@ -427,7 +427,6 @@ The most important part here for me right now is the _aggregation_.  It's easy t
 
 ```json
 {
-  ...
   "aggregations": {
     "genres": {
       "doc_count_error_upper_bound": 0,   

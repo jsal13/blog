@@ -5,20 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Title</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pygmentize.css">
 
 </head>
 
 <body>
-    <h1>The Elasticsearch Tutorial: Part 1, Full Search</h1>
+    <div id="post-content">
+        <h1>The Elasticsearch Tutorial: Part 1, Full Search</h1>
 <p>These will be notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
 <p>What am I going to learn?  According to the tutorial:</p>
+<blockquote>
 <ul>
-<li>How to perform full-text keyword searches on a dataset, optionally with filters</li>
-<li>How to generate, store and search dense vector embeddings using a Machine Learning model</li>
-<li>How to use the ELSER model to generate and search sparse vectors</li>
-<li>How to combine search results from the methods listed above using Elastic's Reciprocal Rank Fusion (RRF) algorithm</li>
+<li>How to perform full-text keyword searches on a dataset, optionally with filters,</li>
+<li>How to generate, store and search dense vector embeddings using a Machine Learning model,</li>
+<li>How to use the ELSER model to generate and search sparse vectors,</li>
+<li>How to combine search results from the methods listed above using Elastic's Reciprocal Rank Fusion (RRF) algorithm,</li>
 </ul>
+</blockquote>
 <p>Huh, neat.  Full-text keyword searches is what I generally think of when I see Elastisearch, and I know very little about dense vector embeddings right now &mdash; let alone how I'd generate, store, and search them!  I have zero familiarity with the ELSER model but I'm guessing that the "ELS" is for "Elastic Search".  The RRF algorithm sounds vaguely like the page-rank algorithm but I'll see when I get to it.</p>
 <h2>Setting Things up for the Tutorial</h2>
 <p>Since I'm using docker compose to run my local elastisearch toy, I need to increase our Docker memory limit in WSL to 4GB, as per <a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_configure_and_start_the_cluster">this note</a>.  The rest is easy: copy their <code>.env</code> and <code>docker-compose.yaml</code> file (on the same page as the note) and <code>docker compose up</code>.  After a few seconds I'm off to the races.</p>
@@ -26,14 +30,14 @@
 <p>This tutorial has a pre-written <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/starter-project">Starter Application</a>, which means that I'm going to have to look through and investigate what this application does before I move on.  I might not wind up needing it.</p>
 <p>It's a flask app which appears to function as a frontend for querying and getting results.  Since it's not something that I'm ever going to use after the tutorial I'm going to ignore most of it and run my own scripts instead.  However, they included a <strong>JSON of sample data</strong> where each record looks like this:</p>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Effective: March 2020\nPurpose\n\nThe purpose of this full-time work-from-home policy is to provide guidelines ...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Effective: March 2020\nPurpose\n\n...&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Work From Home Policy&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./sharepoint/Work from home policy.txt&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;created_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2020-03-01&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2020-03-01&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;teams&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;rolePermissions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;demo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;manager&quot;</span><span class="p">]</span>
-<span class="p">},</span><span class="w"> </span><span class="err">...</span>
+<span class="p">}</span>
 </code></pre></div>
 
 <p>I've truncated the string in "content" so it would fit here.  Awesome, sample data!</p>
@@ -55,8 +59,9 @@
 </code></pre></div>
 
 <p>This gives me the following response:</p>
-<div class="codehilite"><pre><span></span><code>elastic_transport.ConnectionError: Connection error caused by: ConnectionError(Connection error caused by: ProtocolError
-((&#39;Connection aborted.&#39;, RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
+<div class="codehilite"><pre><span></span><code>elastic_transport.ConnectionError: Connection error caused by: ConnectionError
+(Connection error caused by: ProtocolError ((&#39;Connection aborted.&#39;, 
+RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 </code></pre></div>
 
 <p>Oh, I bet I need to use <code>https</code> to talk to ES.  Since I don't want to deal with all the certificate stuff right now, and since this is <em>not</em> a production application, I went into the docker compose file and commented out everything that looked SSL-y to me.  I <code>docker compose up</code> and I'm good to go.</p>
@@ -113,11 +118,7 @@
 
 <p>That tells me that our index creation worked.  Let's add a document to this index.</p>
 <div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="o">...</span>
-
-    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="o">...</span>
+    <span class="o">...</span>
 
     <span class="k">def</span> <span class="nf">insert_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;my_documents&quot;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
@@ -137,7 +138,9 @@
 
 <p>This outputs the associated response ID and shows that it has, indeed, inserted our document into the index.  </p>
 <p>Does the index now have an associated schema?  In the <a href="https://elasticsearch-py.readthedocs.io/en/v8.12.1/api/elasticsearch.html">docs</a> it shows we can use <code>client.indices.get(index="*")</code> to get the Index API.  Let's try it out.</p>
-<div class="codehilite"><pre><span></span><code>    <span class="o">...</span>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+    <span class="o">...</span>
+
     <span class="k">def</span> <span class="nf">index_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
 </code></pre></div>
@@ -171,21 +174,20 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="err">...</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 
 <p>It looks like our fields are in <code>my_documents &gt; mappings &gt; properties</code>.  I'm not sure what the "keyword" property is, but it did get the date field right and everything else looks okay.  Let's move on.</p>
 <p>The tutorial tells us that, while I <em>can</em> ingest documents this way, realistically I will want to use the <code>bulk</code> method to ingrest a bunch of documents at once.  Makes sense to me.  I'll plop it in the <code>Search</code> class:</p>
-<div class="codehilite"><pre><span></span><code><span class="o">...</span>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+    <span class="o">...</span>
     <span class="k">def</span> <span class="nf">insert_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">documents</span><span class="p">):</span>
             <span class="n">operations</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
                 <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;_index&#39;</span><span class="p">:</span> <span class="s1">&#39;my_documents&#39;</span><span class="p">}})</span>
                 <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">bulk</span><span class="p">(</span><span class="n">operations</span><span class="o">=</span><span class="n">operations</span><span class="p">)</span>
-<span class="o">...</span>
 </code></pre></div>
 
 <p>The rest of this section is about how to use the flask app with all of this.  I'll ignore it since I'm not going to use the included flask app.</p>
@@ -225,7 +227,10 @@
 <p>Note that the <code>sample-data.json</code> is the data that was included in the tutorial's sample application.</p>
 <h2>Search Basics</h2>
 <p>The search method will also sit in the <code>Search</code> class and looks like this:</p>
-<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">):</span>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+    <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">)</span>
 </code></pre></div>
 
@@ -241,26 +246,25 @@
 <span class="p">)</span>
 </code></pre></div>
 
-<p>Running this returns:</p>
-<div class="codehilite"><pre><span></span><code><span class="err">...</span>
-<span class="nt">&quot;hits&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<p>Running this returns a whole big JSON of things; the "hits" portion gives me what I want to see:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&quot;hits&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;relation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eq&quot;</span>
 <span class="w">  </span><span class="p">},</span><span class="w"> </span>
-<span class="w">  </span><span class="nt">&quot;max_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">No</span><span class="kc">ne</span><span class="p">,</span><span class="w"> </span>
+<span class="w">  </span><span class="nt">&quot;max_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span>
 <span class="w">  </span><span class="nt">&quot;hits&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="p">}</span>
-<span class="err">...</span>
 </code></pre></div>
 
-<p>Well, that makes sense, since "search text here" isn't going to match anything in our documents.  Since I'll be using the match query a bit, I decided to make it a method:</p>
-<div class="codehilite"><pre><span></span><code>    <span class="o">...</span>
+<p>Well, that makes sense, since "search text here" isn't going to match anything in my documents.  Since I'll be using the match query a bit, I decided to make it a method:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+    <span class="o">...</span>
+
     <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;my_documents&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">match_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">}}})</span>
-    <span class="o">...</span>
 </code></pre></div>
 
 <p>Running this with the query <code>"work from home"</code> gives me a huge output.  The fields for the response can be found <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html#search-api-response-body">here</a>, but it includes the text the search term was found in and the <em>document id</em>.  This document id can be used with <code>self.es.get(index='my_documents', id=id)</code> to return the document itself.</p>
@@ -368,7 +372,6 @@
 </code></pre></div>
 
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="err">...</span>
 <span class="w">  </span><span class="nt">&quot;aggregations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;genres&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;doc_count_error_upper_bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">   </span>
@@ -395,6 +398,7 @@
 <p>In <code>aggregations &gt; genres</code> there's a bunch of keys along with the number of docs containing those keys.  Notice I didn't do any filtering or boolean stuff in the query but I could have and that would have made the aggregation only count those results.  It feels close to using <code>GROUP BY</code> and <code>COUNT()</code> in SQL.</p>
 <h2>Next Time</h2>
 <p>The "Vector Search" part of the ES tutorial ends here.  In the next post I'll cover the next parts of the tutorial: Vector Search and Semantic Search, as well as whatever might come out of those that piques my interest.</p>
+    </div>
 </body>
 
 </html>

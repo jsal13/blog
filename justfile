@@ -1,7 +1,10 @@
 set shell := ["zsh", "-cu"]
 
 default:
-    just --list
+    just build
 
 build:
     @python builder.py
+
+generate-CSS:
+    pygmentize -S default -f html -a .codehilite > pygmentize.css

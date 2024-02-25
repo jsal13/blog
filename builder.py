@@ -29,4 +29,5 @@ for file_path in file_paths:
         html = template.read().replace(r"{{ content }}", html_body)
         dest.write(html)
 
-shutil.copy("styles.css", DEST_PATH)
+shutil.copy("style.css", DEST_PATH)
+shutil.copy("pygmentize.css", DEST_PATH)
