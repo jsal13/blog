@@ -458,4 +458,4 @@ In `aggregations > genres` there's a bunch of keys along with the number of docs
 
 ## Next Time
 
-The "Vector Search" part of the ES tutorial ends here.  In the next post I'll cover the next parts of the tutorial: Vector Search and Semantic Search, as well as whatever might come out of those that piques my interest.
+The "Full-Text Search" part of the ES tutorial ends here.  In the next post I'll cover the next parts of the tutorial: Vector Search and Semantic Search, as well as whatever might come out of those that piques my interest.

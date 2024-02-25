@@ -15,9 +15,12 @@ blockquote p {
 }
 
 img {
+    display: block;
     max-width: 600px;
     border: 1px solid #dddddd;
     border-radius: 0.25rem;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 figcaption {
@@ -25,6 +28,7 @@ figcaption {
     text-align: center;
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
+    padding: 0.5rem;
 }
 
 figure {
