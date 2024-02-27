@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Elasticsearch Tutorial: Part 4, Getting My Hands Dirty</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pygmentize.css">
+
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+</head>
+
+<body>
+
+    
+
+    <div id="post-content">
+        <h1>The Elasticsearch Tutorial: Part 4, Getting My Hands Dirty</h1>
+<p>Last Updated: <em>2024-02-26</em></p>
+<hr />
+<p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
+<p>This time I'm going to do something a little different: I'm going to try out all of the things I've learned over the past few posts with some sample data and see what problems I run into.</p>
+<h2>Parsing the Sample Data</h2>
+<p>I had the <strong>Reuters-21578 Text Categorization Collection</strong> (<a href="https://kdd.ics.uci.edu/databases/reuters21578/reuters21578.html">link</a>) saved in my bookmarks and it seems like the perfect time to download it and check it out.  The description of the dataset tells us:</p>
+<blockquote>
+<p>This is a collection of documents that appeared on Reuters newswire in 1987. The documents were assembled and indexed with categories.</p>
+</blockquote>
+<p>Unzipping the dataset with <code>tar -xvzf</code> (having to look up the flags for the millionth time), we find a whole bunch of text files and... <code>.sgm</code> files?  What in the world is an <code>sgm</code> file?</p>
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-04_sgm.png"
+         alt="SGM">
+    <figcaption>What in the world is an "sgm" file?  And... is that a "dtd" file I see?</figcaption>
+</figure>
+
+<p>Luckily, there's a README included which, first, tells me to cite the dataset:</p>
+<blockquote>
+<p>The Reuters-21578, Distribution 1.0 test collection is available
+from David D. Lewis' professional home page, currently: <a href="http://www.research.att.com/~lewis">http://www.research.att.com/~lewis</a></p>
+</blockquote>
+<p>Next, the README describes, in a lengthy bunch of sections, what "SGML" is and how to parse the <code>sgm</code> files.  There's a lot here but it sort of looks like XML so I'm just going to open one of the files and see what happens.  Here's what each of the sections looks like (body abbreviated with [...] by me):</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&lt;REUTERS</span><span class="w"> </span><span class="na">TOPICS=</span><span class="s">&quot;YES&quot;</span><span class="w"> </span><span class="na">LEWISSPLIT=</span><span class="s">&quot;TRAIN&quot;</span><span class="w"> </span>
+<span class="w">    </span><span class="na">CGISPLIT=</span><span class="s">&quot;TRAINING-SET&quot;</span><span class="w"> </span><span class="na">OLDID=</span><span class="s">&quot;5544&quot;</span><span class="w"> </span><span class="na">NEWID=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+<span class="nt">&lt;DATE&gt;</span>26-FEB-1987<span class="w"> </span>15:01:01.79<span class="nt">&lt;/DATE&gt;</span>
+<span class="nt">&lt;TOPICS&gt;&lt;D&gt;</span>cocoa<span class="nt">&lt;/D&gt;&lt;/TOPICS&gt;</span>
+<span class="nt">&lt;PLACES&gt;&lt;D&gt;</span>el-salvador<span class="nt">&lt;/D&gt;&lt;D&gt;</span>usa<span class="nt">&lt;/D&gt;&lt;D&gt;</span>uruguay<span class="nt">&lt;/D&gt;&lt;/PLACES&gt;</span>
+<span class="nt">&lt;PEOPLE&gt;&lt;/PEOPLE&gt;</span>
+<span class="nt">&lt;ORGS&gt;&lt;/ORGS&gt;</span>
+<span class="nt">&lt;EXCHANGES&gt;&lt;/EXCHANGES&gt;</span>
+<span class="nt">&lt;COMPANIES&gt;&lt;/COMPANIES&gt;</span>
+<span class="nt">&lt;UNKNOWN&gt;</span><span class="w"> </span>
+<span class="ni">&amp;#5;&amp;#5;&amp;#5;</span>C<span class="w"> </span>T
+<span class="ni">&amp;#22;&amp;#22;&amp;#1;</span>f0704<span class="ni">&amp;#31;</span>reute
+u<span class="w"> </span>f<span class="w"> </span>BC-BAHIA-COCOA-REVIEW<span class="w">   </span>02-26<span class="w"> </span>0105<span class="nt">&lt;/UNKNOWN&gt;</span>
+<span class="nt">&lt;TEXT&gt;</span><span class="ni">&amp;#2;</span>
+<span class="nt">&lt;TITLE&gt;</span>BAHIA<span class="w"> </span>COCOA<span class="w"> </span>REVIEW<span class="nt">&lt;/TITLE&gt;</span>
+<span class="nt">&lt;DATELINE&gt;</span><span class="w">    </span>SALVADOR,<span class="w"> </span>Feb<span class="w"> </span>26<span class="w"> </span>-<span class="w"> </span><span class="nt">&lt;/DATELINE&gt;</span>
+<span class="nt">&lt;BODY&gt;</span>Showers<span class="w"> </span>continued<span class="w"> </span>throughout<span class="w"> </span>the<span class="w"> </span>week<span class="w"> </span>in<span class="w"> </span>the<span class="w"> </span>Bahia<span class="w"> </span>cocoa<span class="w"> </span>zone,<span class="w"> </span>[...]<span class="w"> </span>
+Final<span class="w"> </span>figures<span class="w"> </span>for<span class="w"> </span>the<span class="w"> </span>period<span class="w"> </span>to<span class="w"> </span>February<span class="w"> </span>28<span class="w"> </span>are<span class="w"> </span>expected<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>published<span class="w"> </span>
+by<span class="w"> </span>the<span class="w"> </span>Brazilian<span class="w"> </span>Cocoa<span class="w"> </span>Trade<span class="w"> </span>Commission<span class="w"> </span>after<span class="w"> </span>carnival<span class="w"> </span>which<span class="w"> </span>ends<span class="w"> </span>midday<span class="w"> </span>
+on<span class="w"> </span>February<span class="w"> </span>27.
+<span class="w"> </span>Reuter
+<span class="ni">&amp;#3;</span><span class="nt">&lt;/BODY&gt;&lt;/TEXT&gt;</span>
+<span class="nt">&lt;/REUTERS&gt;</span>
+</code></pre></div>
+
+<p>Looking at a few others gives us the same form.  Awesome!  I can pull out a few things here to make a slightly slimmer, more friendly-for-ES dataset.  We'll need the title and body of each of these.</p>
+<p>You might be thinking, "Oh, easy!  Just use <a href="https://stackoverflow.com/a/1732454">regular expressions on it</a>."  Alas, that would be a <em>grave error indeed</em>.  What I'll do is make a short <a href="https://beautiful-soup-4.readthedocs.io/en/latest/">Beautiful Soup</a> script in Python and scrape it that way.  </p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+
+<span class="c1"># Open the sgm files... for now, just pick one.</span>
+<span class="n">reut_sgm_id</span> <span class="o">=</span> <span class="s2">&quot;000&quot;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reut2-</span><span class="si">{</span><span class="n">reut_sgm_id</span><span class="si">}</span><span class="s2">.sgm&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="s2">&quot;lxml&quot;</span><span class="p">)</span>
+
+<span class="c1"># Find all the &quot;reuters&quot; tags, which each article has as an outer tag.</span>
+<span class="n">soup_reuters_tags</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;reuters&quot;</span><span class="p">)</span>
+
+<span class="c1"># For each article, get the title and the body.</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">soup_reuter_tag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">soup_reuters_tags</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">soup_reuter_tag</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span>
+    <span class="n">title_txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span> <span class="k">else</span> <span class="n">title</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">soup_reuter_tag</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="n">doc_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title_txt</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">}</span>
+
+    <span class="c1"># Open a json file and pop in the title and body.</span>
+    <span class="c1"># Each article has its own file.</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;./scraped_documents/doc_</span><span class="si">{</span><span class="n">reut_sgm_id</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s2">0&gt;4</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;w+&quot;</span><span class="p">,</span> 
+        <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">j</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">doc_data</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Not elegant, but gets the job done.  The files each look something like:</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COBANCO INC &lt;CBCO&gt; YEAR NET&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;26-FEB-1987 15:18:59.34earnusaF f0772reute r f </span>
+<span class="s2">[...] or five cts per shr.  Reuter&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-04_blah.png"
+         alt="Blah, Blah">
+    <figcaption>Some of these articles are better than others...</figcaption>
+</figure>
+
+<p>Which reads weird but <em>is</em> actually in the original data.  The first thousand of these articles ought to be good to practice on, then later I can pop in the rest if I want.</p>
+<h2>Dockerized Kibana and Elasticsearch</h2>
+<p>I'll be using the full <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-compose-file">docker compose yaml</a> and .env file from ES.  I felt bad not leaving the SSL stuff in during my first part of this post series, so it's back in now.  One <code>docker compose up</code> later and I'm ready to go to <localhost:5601> and get started.</p>
+<p>Going into the <strong>Search</strong> section, I find <strong>Upload a File</strong>.  I'll do that to make sure my files make sense to ES.</p>
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-04_es_1.png"
+         alt="ES Home Screen.">
+    <figcaption>The home screen.</figcaption>
+</figure>
+
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-04_es_2.png"
+         alt="ES API Upload.">
+    <figcaption>Upload via the API.</figcaption>
+</figure>
+
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-04_es_3.png"
+         alt="Warning!">
+    <figcaption>My file structure cannot be determined... :'[</figcaption>
+</figure>
+
+<p>Alas, they do not.  I get a "File Structure Cannot Be Determined" error.  Ugh.  I decide to make my own index ("New Index") and the ingestion type is via an API.  I choose Python for the language.  It tells me to generate an API key, and I do.  I had to update permissions for the API key to allow it to set <code>verify_certs=False</code> in my script below:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+
+<span class="c1"># Get API from the Kibana &quot;API Ingestion&quot; page.</span>
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="s2">&quot;this_was_my_API_key&quot;</span>
+<span class="n">ES_ADDRESS</span> <span class="o">=</span> <span class="s2">&quot;https://localhost:9200&quot;</span>
+
+
+<span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span><span class="n">hosts</span><span class="o">=</span><span class="n">ES_ADDRESS</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">API_KEY</span><span class="p">,</span> <span class="n">verify_certs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">info</span><span class="p">())</span>
+</code></pre></div>
+
+<p>I realized something at this point.  My old script was making files --- that I would have to re-read and import into this.  Why didn't I just copy-paste this into my previous script and do it all at once?  Why not, indeed.</p>
+<p>Here's the whole shebang:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+
+<span class="c1"># Get API from the Kibana &quot;API Ingestion&quot; page.</span>
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="s2">&quot;this_was_that_cool_API_key_I_had&quot;</span>
+<span class="n">ES_ADDRESS</span> <span class="o">=</span> <span class="s2">&quot;https://localhost:9200&quot;</span>
+
+<span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span><span class="n">hosts</span><span class="o">=</span><span class="n">ES_ADDRESS</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">API_KEY</span><span class="p">,</span> <span class="n">verify_certs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Open the sgm files... for now, just pick one.</span>
+<span class="n">reut_sgm_id</span> <span class="o">=</span> <span class="s2">&quot;000&quot;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reut2-</span><span class="si">{</span><span class="n">reut_sgm_id</span><span class="si">}</span><span class="s2">.sgm&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="s2">&quot;lxml&quot;</span><span class="p">)</span>
+
+<span class="c1"># Find all the &quot;reuters&quot; tags, which each article has as an outer tag.</span>
+<span class="n">soup_reuters_tags</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;reuters&quot;</span><span class="p">)</span>
+
+<span class="c1"># For each article, get the title and the body.</span>
+<span class="c1"># We have to append the index before each article.</span>
+<span class="n">operations</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">soup_reuter_tag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">soup_reuters_tags</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">soup_reuter_tag</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span>
+    <span class="n">title_txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span> <span class="k">else</span> <span class="n">title</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">soup_reuter_tag</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+
+    <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;_index&quot;</span><span class="p">:</span> <span class="s2">&quot;search-reuters&quot;</span><span class="p">}})</span>
+    <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title_txt</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">})</span>
+
+<span class="n">es</span><span class="o">.</span><span class="n">bulk</span><span class="p">(</span><span class="n">operations</span><span class="o">=</span><span class="n">operations</span><span class="p">)</span>
+</code></pre></div>
+
+<p>As soon as this worked, I looked at the "Documents" section of the index and...</p>
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-04_es_4.png"
+         alt="All the documents!">
+    <figcaption>My documents!</figcaption>
+</figure>
+
+<p>Yes!  It worked.  I tried a simple full-text search first before doing anything fancy.</p>
+<h2>TODO THINGS</h2>
+<p>This is a placeholder for me to write the rest of this post.  Make a pipeline, do kNN, and do ELSER!</p>
+<!-- ## Next Time
+
+The next thing that the tutorial recommends doing is a [Chatbot Tutorial](https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/welcome).  Since this tutorial goes over the [Langchain](https://www.langchain.com/) project and works with some concepts I'm not familiar with, I think it might be fun to try out.
+
+See you there! -->
+    </div>
+</body>
+
+</html>

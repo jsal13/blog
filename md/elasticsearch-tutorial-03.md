@@ -169,7 +169,9 @@ _Why_ does the index need to know about the pipeline?  At this point, I realized
 
 > An Elasticsearch index is a logical namespace that holds a collection of documents, where each document is a collection of fields — which, in turn, are key-value pairs that contain your data.
 >
+>
 > Elasticsearch indices are not the same as you’d find in a relational database. Think of an Elasticsearch cluster as a database that can contain many indices you can consider as a table, and within each index, you have many documents.
+>
 >
 > RDBMS => Databases => Tables => Columns/Rows
 > Elasticsearch => Clusters => Indices => Shards => Documents with key-value pairs
