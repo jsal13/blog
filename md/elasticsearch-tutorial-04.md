@@ -139,7 +139,6 @@ from elasticsearch import Elasticsearch
 API_KEY = "this_was_my_API_key"
 ES_ADDRESS = "https://localhost:9200"
 
-
 es = Elasticsearch(hosts=ES_ADDRESS, api_key=API_KEY, verify_certs=False)
 
 print(es.info())

@@ -26,9 +26,7 @@
 <p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
 <p>What am I going to learn this time?  According to the tutorial:</p>
 <blockquote>
-<ul>
-<li>In this section you are going to learn about another Machine Learning approach to search that utilizes the Elastic Learned Sparse EncodeR model, or ELSER, a Natural Language Processing model trained by Elastic to perform semantic search.</li>
-</ul>
+<p>In this section you are going to learn about another Machine Learning approach to search that utilizes the Elastic Learned Sparse EncodeR model, or ELSER, a Natural Language Processing model trained by Elastic to perform semantic search.</p>
 </blockquote>
 <p>Last time(s) I learned the basic full-text search as well as some ML searching (with kNN).  There was also a tiny section on how to combine them with a thing called RRF.  This time it looks like I'm going to jump down the NLP rabbit-hole and learn something called ELSER which &mdash; despite my "very good" acronym deduction skills &mdash; does not begin with "<strong>EL</strong>astic <strong>S</strong>earch".  I'll get'em next time.</p>
 <!-- <figure>
@@ -174,8 +172,8 @@
 <blockquote>
 <p>An Elasticsearch index is a logical namespace that holds a collection of documents, where each document is a collection of fields — which, in turn, are key-value pairs that contain your data.</p>
 <p>Elasticsearch indices are not the same as you’d find in a relational database. Think of an Elasticsearch cluster as a database that can contain many indices you can consider as a table, and within each index, you have many documents.</p>
-<p>RDBMS =&gt; Databases =&gt; Tables =&gt; Columns/Rows
-Elasticsearch =&gt; Clusters =&gt; Indices =&gt; Shards =&gt; Documents with key-value pairs</p>
+<p>RDBMS =&gt; Databases =&gt; Tables =&gt; Columns/Rows</p>
+<p>Elasticsearch =&gt; Clusters =&gt; Indices =&gt; Shards =&gt; Documents with key-value pairs</p>
 </blockquote>
 <p>Right, the ELSER output will be a <em>sparse vector</em>, so this is the value in a key-value pair associated with a document.  That way, I can compare "closeness" of documents in a similar way that I did with the dense vectors.</p>
 <p>The ES tutorial notes:</p>

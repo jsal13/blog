@@ -101,7 +101,9 @@ The tutorial defines two important concepts here.
 
 Roughly, a **document** is a collection of fields with their associated values and an **index** is a collection of documents.  What do they mean by "collection of fields with their associated values", though?  Is this like JSON?
 
-> If you have worked with other databases, you may know that many databases require a schema definition, which is essentially a description of all the fields that you want to store and their types. An Elasticsearch index can be configured with a schema if desired, but it can also automatically derive the schema from the data itself. In this section you are going to let Elasticsearch figure out the schema on its own, which works quite well for simple data types such as text, numbers and dates. Later, after you are introduced to more complex data types, you will learn how to provide explicit schema definitions.
+> If you have worked with other databases, you may know that many databases require a schema definition, which is essentially a description of all the fields that you want to store and their types. An Elasticsearch index can be configured with a schema if desired, but it can also automatically derive the schema from the data itself.  
+
+> In this section you are going to let Elasticsearch figure out the schema on its own, which works quite well for simple data types such as text, numbers and dates. Later, after you are introduced to more complex data types, you will learn how to provide explicit schema definitions.
 
 So... sort of.  Let's see how it goes in practice.
 

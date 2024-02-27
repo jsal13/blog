@@ -8,7 +8,7 @@ These will be a continuation of notes from doing the [elasticsearch tutorial](ht
 
 What am I going to learn this time?  According to the tutorial:
 
-> - This section will introduce you to a different way of searching that leverages Machine Learning (ML) techniques to interpret meaning and context.
+> This section will introduce you to a different way of searching that leverages Machine Learning (ML) techniques to interpret meaning and context.
 
 Last time I learned some basic querying techniques which ultimately used regex-style matching and filtering; it seems that this time I'll be doing some sweet, sweet machine learning!
 

@@ -8,7 +8,7 @@ These will be a continuation of notes from doing the [elasticsearch tutorial](ht
 
 What am I going to learn this time?  According to the tutorial:
 
-> - In this section you are going to learn about another Machine Learning approach to search that utilizes the Elastic Learned Sparse EncodeR model, or ELSER, a Natural Language Processing model trained by Elastic to perform semantic search.
+> In this section you are going to learn about another Machine Learning approach to search that utilizes the Elastic Learned Sparse EncodeR model, or ELSER, a Natural Language Processing model trained by Elastic to perform semantic search.
 
 Last time(s) I learned the basic full-text search as well as some ML searching (with kNN).  There was also a tiny section on how to combine them with a thing called RRF.  This time it looks like I'm going to jump down the NLP rabbit-hole and learn something called ELSER which &mdash; despite my "very good" acronym deduction skills &mdash; does not begin with "**EL**astic **S**earch".  I'll get'em next time.
 
@@ -168,12 +168,11 @@ class Search:
 _Why_ does the index need to know about the pipeline?  At this point, I realized my understanding of what the index _is_ might not be the best, so I [looked it up](https://www.elastic.co/blog/what-is-an-elasticsearch-index).  Some relevant parts of this linked blog entry:
 
 > An Elasticsearch index is a logical namespace that holds a collection of documents, where each document is a collection of fields — which, in turn, are key-value pairs that contain your data.
->
->
+
 > Elasticsearch indices are not the same as you’d find in a relational database. Think of an Elasticsearch cluster as a database that can contain many indices you can consider as a table, and within each index, you have many documents.
->
->
+
 > RDBMS => Databases => Tables => Columns/Rows
+
 > Elasticsearch => Clusters => Indices => Shards => Documents with key-value pairs
 
 Right, the ELSER output will be a _sparse vector_, so this is the value in a key-value pair associated with a document.  That way, I can compare "closeness" of documents in a similar way that I did with the dense vectors.
@@ -191,7 +190,7 @@ Often, different approaches will work on different problems.  I don't have a han
 These next two pages are virtually identical to the previous ML (kNN, RRF) part of the tutorial so I skim them.  The Hybrid Search part has an important caveat:
 
 > The complication that is presented when trying to do the same to combine full-text and sparse vector search requests is that both use the query argument. To be able to provide the two queries that need to be combined with the RRF algorithm, it is necessary to include two query arguments, and the solution to do this is to do it with Sub-Searches.
->
+
 > Sub-searches is a feature that is currently in technical preview. For this reason the Python Elasticsearch client does not natively support it.
 
 There exists a work-around which I won't cover here since it will most likely become out-of-date or not necessary as sub-search is supported in a "Coming Soon!" version of ES.
