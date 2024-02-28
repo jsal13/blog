@@ -12,6 +12,7 @@ DEST_PATH = Path("html")
 
 @dataclass
 class Post:
+    _id: str
     title: Path
     source_path: Path
     dest_path: Path
@@ -36,6 +37,7 @@ class Converter:
             # REF: https://python-markdown.github.io/extensions/code_hilite/#setup
             source_content = source.read()
             title = re.findall("^# (.*)", source_content)[0]
+            _id = re.findall("<!-- ID: (\d+) -->", source_content)[0]
             html_body = markdown.markdown(
                 source_content, extensions=["fenced_code", "codehilite"]
             )
@@ -51,7 +53,7 @@ class Converter:
         # Add info to metadata if not a draft.
         file_name = source_path.split("/")[-1]
         if file_name[0] != "_":  # If NOT a draft...
-            post_obj = Post(title=title, source_path=source_path, dest_path=dest_path)
+            post_obj = Post(_id=_id, title=title, source_path=source_path, dest_path=dest_path)
             self.post_info.append(post_obj)
 
     def convert_all_md_to_html(self) -> None:
@@ -61,6 +63,9 @@ class Converter:
     def create_index_html(self) -> None:
         """Create index.html with ToC."""
         toc = []
+        
+        # Sort posts by _id value, smallest last.
+        self.post_info.sort(key=lambda x: x._id, reverse=True)
 
         for post_obj in self.post_info:
             toc.append(f"<li><a href='{post_obj.dest_path}'>{post_obj.title}</a></li>")
