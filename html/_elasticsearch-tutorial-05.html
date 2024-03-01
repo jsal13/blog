@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Elasticsearch Tutorial: Part 5, Chatbot Example</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pygmentize.css">
+
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+</head>
+
+<body>
+
+    
+
+    <div id="post-content">
+        <h1>The Elasticsearch Tutorial: Part 5, Chatbot Example</h1>
+<!-- ID: 0050 -->
+<p>Last Updated: <em>2024-02-29</em></p>
+<hr />
+<p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
+<p>This time I'll be going through the <a href="https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/chatbot-rag-app/setup">chatbot tutorial</a>.</p>
+<h2>Preperation</h2>
+<p>The first few pages of the chatbot tutorial tells me to download the repo (<code>git clone https://github.com/elastic/elasticsearch-labs</code>), make a virtual env for python, (<code>python3 -m venv .venv; source .venv/bin/activate;</code>) and install the packages (<code>pip install -r requirements.txt</code>).  Nothing wild so far!</p>
+<p><strong>A mini-adventure</strong>: I was at Starbucks before a class when I was cloning the repo and the wifi there isn't great.  It refused to download beyond 1%.  I tried to use the <code>--depth=1</code> <a href="https://github.blog/2020-12-21-get-up-to-speed-with-partial-clone-and-shallow-clone/">flag</a> and after 4% I got a different error message:</p>
+<div class="codehilite"><pre><span></span><code>error:<span class="w"> </span>RPC<span class="w"> </span>failed<span class="p">;</span><span class="w"> </span>curl<span class="w"> </span><span class="m">16</span><span class="w"> </span>Error<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>HTTP2<span class="w"> </span>framing<span class="w"> </span>layer
+error:<span class="w"> </span><span class="m">8103</span><span class="w"> </span>bytes<span class="w"> </span>of<span class="w"> </span>body<span class="w"> </span>are<span class="w"> </span>still<span class="w"> </span>expected
+fetch-pack:<span class="w"> </span>unexpected<span class="w"> </span>disconnect<span class="w"> </span><span class="k">while</span><span class="w"> </span>reading<span class="w"> </span>sideband<span class="w"> </span>packet
+fatal:<span class="w"> </span>early<span class="w"> </span>EOF
+fatal:<span class="w"> </span>fetch-pack:<span class="w"> </span>invalid<span class="w"> </span>index-pack<span class="w"> </span>output
+</code></pre></div>
+
+<p>Huh.  That's a new one.  I found <a href="https://github.com/orgs/community/discussions/48568#discussioncomment-5108608">this answer</a> and decided to reset my wifi connection.  Nothing.  I decided to turn the wifi off and on again.  Nothing.  I decided to restart my laptop and &mdash; something!  The download sped to 81% and... failure.  One more time.  It looked like it got to 100% but gave me an error:</p>
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-05_gitclone.png"
+         alt="So close.">
+    <figcaption>Oh come on!</figcaption>
+</figure>
+
+<p>As I was writing up this part of the blog I tried one last time and finally &mdash; finally! &amp;mdash it finished and I had a shallow clone of the repo!  That ends that mini-advnture.  Surely, installing the Python packages will go smoother &mdash;</p>
+<!-- ## Next Time
+
+The next thing that the tutorial recommends doing is a [Chatbot Tutorial](https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/welcome).  Since this tutorial goes over the [Langchain](https://www.langchain.com/) project and works with some concepts I'm not familiar with, I think it might be fun to try out.
+
+See you there! -->
+    </div>
+</body>
+
+</html>
