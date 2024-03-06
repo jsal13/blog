@@ -35,7 +35,7 @@ As I was writing up this part of the blog I tried one last time and finally &mda
 
 It did.  Whew.  I copy the `.env.example` to `.env` start my docker compose ES clusters.  Luckily, I had already downloaded these before I came to the coffee shop since otherwise there's no way that would `docker pull` in less than an hour and I'd have to give up until I went home.
 
-The next part has me downloading an LLM, which I _don't_ have locally.  I'll have to download this when I get home.  In the meantime, let me look at what the example app in this repo does.
+<!-- The next part has me downloading an LLM, which I _don't_ have locally.  I'll have to download this when I get home.  In the meantime, let me look at what the example app in this repo does. -->
 
 ## The Example App
 
@@ -112,8 +112,49 @@ The `api.py` file has two endpoints: `/` which sends us to the index page, and `
 
 That's all of the sample app stuff.  As I parse through what is happening I'll most likely need to revisit some of these files later, but it's nice to know they exist and it's nice to know where things are.
 
+## Python Back End
 
-<!-- ## Next Time
+Running `flask create-index` gives me an error.
+
+```shell
+elastic_transport.TlsError: TLS error caused by: TlsError(TLS error caused by: SSLError([SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:1007)))
+```
+
+I've learned from doing this a few times that there's something afoot in the ES client in the Python code and, not wanting to _solve_ this problem so much as _avoid dealing with it_, I added the following to the **/data/index_data.py** file:
+
+```python
+if ELASTICSEARCH_URL:
+    print(ELASTICSEARCH_URL)
+    elasticsearch_client = Elasticsearch(
+        hosts=[ELASTICSEARCH_URL], basic_auth=("elastic", "example"), verify_certs=False  # Added this!
+    )
+```
+
+This'll definitely work, right?  Let's see!
+
+```shell
+raise HTTP_EXCEPTIONS.get(meta.status, ApiError)(
+elasticsearch.NotFoundError: NotFoundError(404, 'resource_not_found_exception', 'No known trained model with model_id [.elser_model_2]')
+```
+
+At _least_ I know where this is!  It's in the same file, in the `install_elser()` function.  I look a bit further down and see...
+
+```shell
+raise HTTP_EXCEPTIONS.get(meta.status, ApiError)(
+elasticsearch.BadRequestError: BadRequestError(400, 'action_request_validation_exception', "Validation Failed: 1: [model_type] must be set if [definition] is not defined.;2: [inference_config] must not be null.;3: Invalid model_id; '.elser_model_2' can contain lowercase alphanumeric (a-z and 0-9), hyphens or underscores; must start and end with alphanumeric;")
+```
+
+Oh, well, sure.  That makes sense.  While looking this up, I see that I need a certain **subscription type** to use ELSER, which makes me a little nervous.  It does not explicitly say this in the requirements but I've been burned before.
+
+I run into a snag here.  I can't figure out what model id I should be using, and doing a `get` for the model ids only gives me a single id for an unrelated model.  I'm worried that I _do_ need a subscription.
+
+TODO: I gott'a figure this out!
+
+
+
+
+<!-- 
+## Next Time
 
 The next thing that the tutorial recommends doing is a [Chatbot Tutorial](https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/welcome).  Since this tutorial goes over the [Langchain](https://www.langchain.com/) project and works with some concepts I'm not familiar with, I think it might be fun to try out.
 
