@@ -20,8 +20,8 @@
     
 
     <div id="post-content">
-        <h1>The Elasticsearch Tutorial: Part 3, Semantic Search using ELSER</h1>
-<!-- ID: 0030 -->
+        <h1 id="the-elasticsearch-tutorial-part-3-semantic-search-using-elser">The Elasticsearch Tutorial: Part 3, Semantic Search using ELSER<a class="headerlink" href="#the-elasticsearch-tutorial-part-3-semantic-search-using-elser" title="Permanent link">&para;</a></h1>
+<!-- ID: 202402240030 -->
 <p>Last Updated: <em>2024-02-26</em></p>
 <hr />
 <p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
@@ -36,9 +36,46 @@
     <figcaption>A decision tree.</figcaption>
 </figure> -->
 
-<h2>The ELSER Model</h2>
+<h2 id="the-elser-model">The ELSER Model<a class="headerlink" href="#the-elser-model" title="Permanent link">&para;</a></h2>
 <p>Remember <code>dense_vector</code>s?  They were the opposite of sparse vectors (lots of non-zero entries).  Typically the criticism lobbied against <code>dense_vectors</code> is that there's no great way to compress them so you wind up having to use a ton of space to represent them.  Sometimes, it's <em>Good Enough &trade;</em> to try and find the "important" or "most influential" dimensions in the vector and use those.  What's nice about this is that, instead of having a ton of elements to work with you'll only have a few.  Moreover, you can do some fairly easy compression on!  For example,</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># Make a dense vector where every entry is very small</span>
 <span class="c1"># except for a few spots where it&#39;s large.</span>
@@ -76,12 +113,28 @@
     <span class="mi">20</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span>
     <span class="mi">25</span><span class="p">:</span> <span class="mi">27</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>This can be slimmed down some more, but the point is that a lot of space can be saved with this.  Moreover, it's a simple exercise to define things like dot products or even matrix operations for sparse matricies.  Neato.</p>
 <p>Enough of me gushing about sparse vectors, let me get back to the tutorial at hand.</p>
 <p>In the same way I added dense vectors to the index, I can also add some sparse vectors ("<code>elser_embeddings</code>"):</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="c1"># ...</span>
 
     <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -98,10 +151,46 @@
         <span class="p">})</span>
 
     <span class="c1"># ...</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>The ELSER model needs to be downloaded, similar to the way that I had to download that other embedding model.  As per the tutorial:</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="c1"># ...</span>
 
     <span class="k">def</span> <span class="nf">deploy_elser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -138,13 +227,35 @@
                 <span class="p">}</span>
             <span class="p">]</span>
         <span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>So far, things seem quite similar to the other embedding which is most likely on purpose.  I appreciate it, makes it easier to pick up, learn, and remember!</p>
 <p>The <code>.put_trained_model()</code> method downloads ELSER.  The <code>.start_trained_model_deployment()</code> method, guess what, will begin the deployment of the model.</p>
 <p>The last thing the tutorial does here is to "define a pipeline" for it to tell ES how to use the model.  This is the <code>.put_pipeline()</code> method.  This probably becomes much more complex as the pipelining in and out of the model become full of weird business logic stuff, but for now it's nice and simple: summary in, model output out.  But <em>what is the model output?</em>  I guess I'll see soon.</p>
 <p>The index needs to know about the pipeline and the way to add the pipeline to the index is straight-forward:</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="c1"># ...</span>
 
     <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -167,7 +278,7 @@
                 <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p><em>Why</em> does the index need to know about the pipeline?  At this point, I realized my understanding of what the index <em>is</em> might not be the best, so I <a href="https://www.elastic.co/blog/what-is-an-elasticsearch-index">looked it up</a>.  Some relevant parts of this linked blog entry:</p>
 <blockquote>
@@ -183,14 +294,14 @@
 </blockquote>
 <p>Reasonable!  If the text doesn't appear in the document, how would full-text search know about it?  One lingering question in my mind: <em>how does ELSER compare with the previous ML (kNN) approach with dense vectors?</em></p>
 <p>Often, different approaches will work on different problems.  I don't have a handle on exactly which problems are good for which approach right now.  Maybe I'll learn that soon &mdash; or maybe I'll have to wait for a lifetime of experience to be able to figure it out.  Somewhere in that range.</p>
-<h2>Semantic Queries &amp; Hybrid Search</h2>
+<h2 id="semantic-queries-hybrid-search">Semantic Queries &amp; Hybrid Search<a class="headerlink" href="#semantic-queries-hybrid-search" title="Permanent link">&para;</a></h2>
 <p>These next two pages are virtually identical to the previous ML (kNN, RRF) part of the tutorial so I skim them.  The Hybrid Search part has an important caveat:</p>
 <blockquote>
 <p>The complication that is presented when trying to do the same to combine full-text and sparse vector search requests is that both use the query argument. To be able to provide the two queries that need to be combined with the RRF algorithm, it is necessary to include two query arguments, and the solution to do this is to do it with Sub-Searches.</p>
 <p>Sub-searches is a feature that is currently in technical preview. For this reason the Python Elasticsearch client does not natively support it.</p>
 </blockquote>
 <p>There exists a work-around which I won't cover here since it will most likely become out-of-date or not necessary as sub-search is supported in a "Coming Soon!" version of ES.</p>
-<h2>Next Time</h2>
+<h2 id="next-time">Next Time<a class="headerlink" href="#next-time" title="Permanent link">&para;</a></h2>
 <p>The next thing that the tutorial recommends doing is a <a href="https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/welcome">Chatbot Tutorial</a>.  Since this tutorial goes over the <a href="https://www.langchain.com/">Langchain</a> project and works with some concepts I'm not familiar with, I think it might be fun to try out.</p>
 <p>See you there!</p>
     </div>

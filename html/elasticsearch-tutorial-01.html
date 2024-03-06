@@ -20,8 +20,8 @@
     
 
     <div id="post-content">
-        <h1>The Elasticsearch Tutorial: Part 1, Full Search</h1>
-<!-- ID: 0010 -->
+        <h1 id="the-elasticsearch-tutorial-part-1-full-search">The Elasticsearch Tutorial: Part 1, Full Search<a class="headerlink" href="#the-elasticsearch-tutorial-part-1-full-search" title="Permanent link">&para;</a></h1>
+<!-- ID: 202402240010 -->
 <p>Last Updated: <em>2024-02-24</em></p>
 <hr />
 <p>These will be notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
@@ -35,12 +35,20 @@
 </ul>
 </blockquote>
 <p>Huh, neat.  Full-text keyword searches is what I generally think of when I see Elastisearch, and I know very little about dense vector embeddings right now &mdash; let alone how I'd generate, store, and search them!  I have zero familiarity with the ELSER model but I'm guessing that the "ELS" is for "Elastic Search".  The RRF algorithm sounds vaguely like the page-rank algorithm but I'll see when I get to it.</p>
-<h2>Setting Things up for the Tutorial</h2>
+<h2 id="setting-things-up-for-the-tutorial">Setting Things up for the Tutorial<a class="headerlink" href="#setting-things-up-for-the-tutorial" title="Permanent link">&para;</a></h2>
 <p>Since I'm using docker compose to run my local elastisearch toy, I need to increase our Docker memory limit in WSL to 4GB, as per <a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_configure_and_start_the_cluster">this note</a>.  The rest is easy: copy their <code>.env</code> and <code>docker-compose.yaml</code> file (on the same page as the note) and <code>docker compose up</code>.  After a few seconds I'm off to the races.</p>
-<h2>The Starter Application</h2>
+<h2 id="the-starter-application">The Starter Application<a class="headerlink" href="#the-starter-application" title="Permanent link">&para;</a></h2>
 <p>This tutorial has a pre-written <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/starter-project">Starter Application</a>, which means that I'm going to have to look through and investigate what this application does before I move on.  I might not wind up needing it.</p>
 <p>It's a flask app which appears to function as a frontend for querying and getting results.  Since it's not something that I'm ever going to use after the tutorial I'm going to ignore most of it and run my own scripts instead.  However, they included a <strong>JSON of sample data</strong> where each record looks like this:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Effective: March 2020\nPurpose\n\n...&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Work From Home Policy&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./sharepoint/Work from home policy.txt&quot;</span><span class="p">,</span>
@@ -49,13 +57,24 @@
 <span class="w">    </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;teams&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;rolePermissions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;demo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;manager&quot;</span><span class="p">]</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>I've truncated the string in "content" so it would fit here.  Awesome, sample data!</p>
-<h2>Full-Text Search</h2>
+<h2 id="full-text-search">Full-Text Search<a class="headerlink" href="#full-text-search" title="Permanent link">&para;</a></h2>
 <p>Ah, this part goes over the ES <em>Python</em> client, which is why they included a <em>Python</em> flask sample app.  Makes sense.  I'll blaze my own path here since all I need is to write some code to query my local ES.  The endpoint to interact with my ES cluster is <localhost:9200>.</p>
 <p>After making a tiny venv to use, I install the Python <code>elasticsearch</code> package.  Let's see what this little guy can do.  Following the tutorial with slight modifications, I try:</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
 
 
 <span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
@@ -67,17 +86,34 @@
 
 
 <span class="n">es</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>This gives me the following response:</p>
-<div class="codehilite"><pre><span></span><code>elastic_transport.ConnectionError: Connection error caused by: ConnectionError
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>elastic_transport.ConnectionError: Connection error caused by: ConnectionError
 (Connection error caused by: ProtocolError ((&#39;Connection aborted.&#39;, 
 RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Oh, I bet I need to use <code>https</code> to talk to ES.  Since I don't want to deal with all the certificate stuff right now, and since this is <em>not</em> a production application, I went into the docker compose file and commented out everything that looked SSL-y to me.  I <code>docker compose up</code> and I'm good to go.</p>
 <p>The same code now gives me:</p>
-<div class="codehilite"><pre><span></span><code>Connected to Elasticsearch!
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code>Connected to Elasticsearch!
 {
   &#39;name&#39;: &#39;es01&#39;,
   &#39;cluster_name&#39;: &#39;docker-cluster&#39;,
@@ -93,11 +129,11 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
   &#39;minimum_index_compatibility_version&#39;: &#39;7.0.0&#39;},
   &#39;tagline&#39;: &#39;You Know, for Search&#39;
 }
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Great!  The <code>elasticsearch.Elasticsearch()</code> class is a client class which takes a host as its first parameter. I can make sure it connected to a cluster with the <code>.info()</code> method.  </p>
 <p>What's next?  Maybe we put in a document?</p>
-<h2>Create an Index</h2>
+<h2 id="create-an-index">Create an Index<a class="headerlink" href="#create-an-index" title="Permanent link">&para;</a></h2>
 <p>The tutorial defines two important concepts here.</p>
 <p>Roughly, a <strong>document</strong> is a collection of fields with their associated values and an <strong>index</strong> is a collection of documents.  What do they mean by "collection of fields with their associated values", though?  Is this like JSON?</p>
 <blockquote>
@@ -105,7 +141,16 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <p>In this section you are going to let Elasticsearch figure out the schema on its own, which works quite well for simple data types such as text, numbers and dates. Later, after you are introduced to more complex data types, you will learn how to provide explicit schema definitions.</p>
 </blockquote>
 <p>So... sort of.  Let's see how it goes in practice.</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="o">...</span>
 
@@ -115,10 +160,17 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 
 <span class="n">es</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
 <span class="n">es</span><span class="o">.</span><span class="n">create_index</span><span class="p">()</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>The <code>ignore_unavailable=True</code> functions like the <code>IF EXISTS</code> in SQL: if ES can't find the index it ignores the delete command.  After executing my code, the docker logs give me:</p>
-<div class="codehilite"><pre><span></span><code>{
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>{
   &quot;@timestamp&quot;:&quot;2024-02-24T07:51:59.436Z&quot;,
   &quot;log.level&quot;: &quot;INFO&quot;,
   &quot;message&quot;:&quot;[my_documents] creating index,
@@ -126,10 +178,26 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
   templates [],
   shards [1]/[1]&quot;,
 ...
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>That tells me that our index creation worked.  Let's add a document to this index.</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="o">...</span>
 
     <span class="k">def</span> <span class="nf">insert_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">):</span>
@@ -146,19 +214,52 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <span class="p">}</span>
 <span class="n">resp</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">insert_document</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="p">[</span><span class="s2">&quot;_id&quot;</span><span class="p">])</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>This outputs the associated response ID and shows that it has, indeed, inserted our document into the index.  </p>
 <p>Does the index now have an associated schema?  In the <a href="https://elasticsearch-py.readthedocs.io/en/v8.12.1/api/elasticsearch.html">docs</a> it shows we can use <code>client.indices.get(index="*")</code> to get the Index API.  Let's try it out.</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="o">...</span>
 
     <span class="k">def</span> <span class="nf">index_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Which returns the following:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;my_documents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;aliases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
 <span class="w">    </span><span class="nt">&quot;mappings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -188,11 +289,18 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <span class="w">    </span><span class="p">},</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>It looks like our fields are in <code>my_documents &gt; mappings &gt; properties</code>.  I'm not sure what the "keyword" property is, but it did get the date field right and everything else looks okay.  Let's move on.</p>
 <p>The tutorial tells us that, while I <em>can</em> ingest documents this way, realistically I will want to use the <code>bulk</code> method to ingrest a bunch of documents at once.  Makes sense to me.  I'll plop it in the <code>Search</code> class:</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="o">...</span>
     <span class="k">def</span> <span class="nf">insert_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">documents</span><span class="p">):</span>
             <span class="n">operations</span> <span class="o">=</span> <span class="p">[]</span>
@@ -200,11 +308,40 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
                 <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;_index&#39;</span><span class="p">:</span> <span class="s1">&#39;my_documents&#39;</span><span class="p">}})</span>
                 <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">bulk</span><span class="p">(</span><span class="n">operations</span><span class="o">=</span><span class="n">operations</span><span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>The rest of this section is about how to use the flask app with all of this.  I'll ignore it since I'm not going to use the included flask app.</p>
 <p><strong>All of the code up until now, minus some of the stuff that wasn't important:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
 
 <span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
 
@@ -234,20 +371,32 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;sample-data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">documents</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <span class="n">es</span><span class="o">.</span><span class="n">insert_documents</span><span class="p">(</span><span class="n">documents</span><span class="o">=</span><span class="n">documents</span><span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Note that the <code>sample-data.json</code> is the data that was included in the tutorial's sample application.</p>
-<h2>Search Basics</h2>
+<h2 id="search-basics">Search Basics<a class="headerlink" href="#search-basics" title="Permanent link">&para;</a></h2>
 <p>The search method will also sit in the <code>Search</code> class and looks like this:</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="o">...</span>
 
     <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>The only thing that I need to know is: <em>what do the query args look like?</em>  The <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html">match query</a> is "baby's first query" for ES and the way it's written for the Python client is:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
     <span class="n">query</span><span class="o">=</span><span class="p">{</span>
         <span class="s1">&#39;match&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -256,20 +405,33 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Running this returns a whole big JSON of things; the "hits" portion gives me what I want to see:</p>
-<div class="codehilite"><pre><span></span><code><span class="nt">&quot;hits&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">&quot;hits&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;relation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eq&quot;</span>
 <span class="w">  </span><span class="p">},</span><span class="w"> </span>
 <span class="w">  </span><span class="nt">&quot;max_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span>
 <span class="w">  </span><span class="nt">&quot;hits&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Well, that makes sense, since "search text here" isn't going to match anything in my documents.  Since I'll be using the match query a bit, I decided to make it a method:</p>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
     <span class="o">...</span>
 
     <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">):</span>
@@ -277,11 +439,18 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 
     <span class="k">def</span> <span class="nf">match_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">}}})</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Running this with the query <code>"work from home"</code> gives me a huge output.  The fields for the response can be found <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html#search-api-response-body">here</a>, but it includes the text the search term was found in and the <em>document id</em>.  This document id can be used with <code>self.es.get(index='my_documents', id=id)</code> to return the document itself.</p>
 <p>There is also a way to match queries in different fields called <em>multi_match</em>.  The query looks like this:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;multi_match&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w">    </span><span class="s2">&quot;this is a test&quot;</span><span class="p">,</span><span class="w"> </span>
@@ -289,12 +458,19 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>The Python equivalent is how I expected it to look, similar to our above match query.</p>
-<h2>Pagination</h2>
+<h2 id="pagination">Pagination<a class="headerlink" href="#pagination" title="Permanent link">&para;</a></h2>
 <p>Everyone's <em>favorite</em>: pagination.  Frustrating to keep track of, annoying when it errors out.  Luckily, it's not too bad here:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">results</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">results</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
     <span class="n">query</span><span class="o">=</span><span class="p">{</span>
         <span class="s1">&#39;multi_match&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
@@ -302,13 +478,35 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
         <span class="p">}</span>
     <span class="p">},</span> <span class="n">size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">from_</span><span class="o">=</span><span class="mi">5</span>
 <span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Similar to how I'd expect it, with the exception of the underscore in <code>from_</code>.</p>
 <p>Not much else going on here, so I'll move on.</p>
-<h2>Boolean Queries and Filtering</h2>
+<h2 id="boolean-queries-and-filtering">Boolean Queries and Filtering<a class="headerlink" href="#boolean-queries-and-filtering" title="Permanent link">&para;</a></h2>
 <p>The structure of the booleans, even after reading the tutorial page, was a bit fuzzy to me.  I looked up <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html">an example</a> which gives the gist of it:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;bool&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;must&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -331,10 +529,26 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Looks complicated at first, but if we cut out some of the outer fields it becomes a bit easier to read.  Everything is nested in the <code>query &gt; bool</code> fields, so I'll get rid of those:</p>
-<div class="codehilite"><pre><span></span><code><span class="nt">&quot;must&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">&quot;must&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;user.id&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kimchy&quot;</span><span class="w"> </span><span class="p">}</span>
 <span class="p">},</span>
 <span class="nt">&quot;filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -351,7 +565,7 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <span class="p">],</span>
 <span class="nt">&quot;minimum_should_match&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
 <span class="nt">&quot;boost&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>According to the tutorial, there's four different ways to combine queries:</p>
 <ul>
@@ -370,20 +584,47 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <li>The results <em>must not</em> have an <code>age</code>in that range.</li>
 </ul>
 <p>Reasonable enough!  This summarizes the querying in this section of the tutorial.  The only other thing they go over is the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html">match_all</a> query which, as you might imagine, matches every document.  This is useful if, for example, only a filter is selected and we want to filter through all the documents instead of looking for matches.</p>
-<h2>Aggregation</h2>
+<h2 id="aggregation">Aggregation<a class="headerlink" href="#aggregation" title="Permanent link">&para;</a></h2>
 <p>The last part of the Vector Search section is about "Faceted Search" which is a pattern where users search something and when the result is returned the user is presented with a list of <em>suggested filters</em> which they can add to the query.</p>
 <p>For example, if the user searched "work from home policy" then the results may contain articles from 2018, 2019, 2020, etc.  The user can be shown these years so that they can opt to choose one or more of these to further filter documents.</p>
 <p>The most important part here for me right now is the <em>aggregation</em>.  It's easy to understand ES's <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-terms-aggregation.html">Terms Aggregation</a> with an example, which I copy from that link:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;aggs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;genres&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;terms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;field&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;genre&quot;</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;aggregations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;genres&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;doc_count_error_upper_bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">   </span>
@@ -405,10 +646,10 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>In <code>aggregations &gt; genres</code> there's a bunch of keys along with the number of docs containing those keys.  Notice I didn't do any filtering or boolean stuff in the query but I could have and that would have made the aggregation only count those results.  It feels close to using <code>GROUP BY</code> and <code>COUNT()</code> in SQL.</p>
-<h2>Next Time</h2>
+<h2 id="next-time">Next Time<a class="headerlink" href="#next-time" title="Permanent link">&para;</a></h2>
 <p>The "Full-Text Search" part of the ES tutorial ends here.  In the next post I'll cover the next parts of the tutorial: Vector Search and Semantic Search, as well as whatever might come out of those that piques my interest.</p>
     </div>
 </body>
