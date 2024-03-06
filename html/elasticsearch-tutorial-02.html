@@ -20,7 +20,7 @@
     
 
     <div id="post-content">
-        <h1 id="the-elasticsearch-tutorial-part-2-vector-search">The Elasticsearch Tutorial: Part 2, Vector Search<a class="headerlink" href="#the-elasticsearch-tutorial-part-2-vector-search" title="Permanent link">&para;</a></h1>
+        <h1 id="the-elasticsearch-tutorial-part-2-vector-search">The Elasticsearch Tutorial: Part 2, Vector Search</h1>
 <!-- ID: 202402240020 -->
 <p>Last Updated: <em>2024-02-25</em></p>
 <hr />
@@ -36,7 +36,7 @@
     <figcaption>A decision tree.</figcaption>
 </figure>
 
-<h2 id="embeddings">Embeddings<a class="headerlink" href="#embeddings" title="Permanent link">&para;</a></h2>
+<h2 id="embeddings">Embeddings</h2>
 <p>The tutorial defines the term <strong>embedding</strong> as</p>
 <blockquote>
 <p>a vector (an array of numbers) that represents real-world objects such as words, sentences, images or videos.</p>
@@ -52,7 +52,7 @@ $$</p>
 <p>For \(d(A, B)\) I used a Euclidean distance, but any <a href="https://en.wikipedia.org/wiki/Distance#Mathematical_formalization">distance function</a> would work equally well.</p>
 <p>Why do I care about finding the distances between embeddings?  This might tell them if the two terms (or pictures, or videos, or whatever) are <em>similar</em> to each other in some respect.</p>
 <p>The tutorial goes on and tells me that I'll use embeddings to help find concepts that are similar to one-another instead of using the keyword searching I've been doing so far.</p>
-<h2 id="generating-embeddings">Generating Embeddings<a class="headerlink" href="#generating-embeddings" title="Permanent link">&para;</a></h2>
+<h2 id="generating-embeddings">Generating Embeddings</h2>
 <p>As soon as I get onto the next page of the tutorial, it tells me to go install <a href="https://www.sbert.net/">SentenceTransformers</a>.  I've heard of this before but haven't worked with it.</p>
 <p>The tutorial tells me to select a pre-trained model.  Sure, that's reasonable, I don't want to have to spend all my time training this thing &mdash; and I almost certainly don't have enough data to train it on!  The tutorial recommends the <code>all-MiniLM-L6-v2</code> model on <a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">huggingface</a> and I have no strong opposition.</p>
 <figure>
@@ -92,7 +92,7 @@ $$</p>
 <p>This is a sentence-transformers model: It maps sentences &amp; paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search.</p>
 </blockquote>
 <p>That tracks.  The model has 384 dimensions, so this embedding will be an array with 384 elements.</p>
-<h2 id="field-types">Field Types<a class="headerlink" href="#field-types" title="Permanent link">&para;</a></h2>
+<h2 id="field-types">Field Types</h2>
 <p>This part of the tutorial goes into how ES tries its best to create field mappings in the index that make sense &mdash; like the "text" and "date" fields in the previous section &mdash; but that I can explicitly create fields with a certain type if I want.  They give the code for that here:</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -166,7 +166,7 @@ $$</p>
 </code></pre></div></td></tr></table></div>
 
 <p>I haven't mentioned this yet, but it does bother me that there are no type-hints in this code.  On one hand I understand it could be a bit distracting but on the other hand I like to know what types my parameters are.  It helps me understand the "flow" of the code.  Alas, life isn't fair sometimes.</p>
-<h2 id="k-nearest-neighbor-search">k-Nearest Neighbor Search<a class="headerlink" href="#k-nearest-neighbor-search" title="Permanent link">&para;</a></h2>
+<h2 id="k-nearest-neighbor-search">k-Nearest Neighbor Search</h2>
 <p>If you haven't seen kNN before, I've drawn this picture <em>just for you</em>.  </p>
 <figure>
     <img src="../assets/images/elasticsearch-tutorial-02_knn.png"
@@ -175,7 +175,7 @@ $$</p>
 </figure>
 
 <p>Luckily, ES is going to do the work for me.  By default, ES will use <a href="https://en.wikipedia.org/wiki/Cosine_similarity">cosine similarity</a> as the distance function and find all of the embeddings close to whatever the query is with respect to that distance function.  ES has kNN as part of the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html#search-api-knn">default search API</a>.</p>
-<h2 id="hybrid-search">Hybrid Search<a class="headerlink" href="#hybrid-search" title="Permanent link">&para;</a></h2>
+<h2 id="hybrid-search">Hybrid Search</h2>
 <p>This section talks about <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html">Reciprocal Rank Fusion</a>.  Seems like a fancy polling-type thing where a few different result sets can be compared.  The algorithm is suprisingly simple:</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -247,7 +247,7 @@ $$</p>
 <p>In the above example, we first execute the kNN search to get its global top 50 results. Then we execute the query to get its global top 50 results. Afterwards, on a coordinating node, we combine the knn search results with the query results and rank them based on the RRF method to get the final top 10 results.</p>
 </blockquote>
 <p>Text search, kNN, and RRF all working together like one big happy family.  Cool stuff, ES.</p>
-<h2 id="next-time">Next Time<a class="headerlink" href="#next-time" title="Permanent link">&para;</a></h2>
+<h2 id="next-time">Next Time</h2>
 <p>I didn't do much "hands on" work this time since the kNN + RRF were quite similar to the full-text search in terms of the API and it was a bit more boring than I thought to bulk upload a bunch of sample embeddings and see which were close to one-another.  I'm sure if I had a better dataset than "random phrases I thought of" it would be neat.  Maybe in the last part of this series I'll find a nice dataset and answer some questions in it.</p>
 <p>The "Vector Search" part of the ES tutorial ends here.  In the next post I'll cover the next part of the tutorial: Semantic Search.  This is the part with that ELSER Model, so I'll finally get to learn what the acronym stands for!</p>
     </div>

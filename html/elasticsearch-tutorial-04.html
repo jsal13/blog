@@ -20,13 +20,13 @@
     
 
     <div id="post-content">
-        <h1 id="the-elasticsearch-tutorial-part-4-getting-my-hands-dirty">The Elasticsearch Tutorial: Part 4, Getting My Hands Dirty<a class="headerlink" href="#the-elasticsearch-tutorial-part-4-getting-my-hands-dirty" title="Permanent link">&para;</a></h1>
+        <h1 id="the-elasticsearch-tutorial-part-4-getting-my-hands-dirty">The Elasticsearch Tutorial: Part 4, Getting My Hands Dirty</h1>
 <!-- ID: 202402240040 -->
 <p>Last Updated: <em>2024-02-26</em></p>
 <hr />
 <p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
 <p>This time I'm going to do something a little different: I'm going to try out all of the things I've learned over the past few posts with some sample data and see what problems I run into.</p>
-<h2 id="parsing-the-sample-data">Parsing the Sample Data<a class="headerlink" href="#parsing-the-sample-data" title="Permanent link">&para;</a></h2>
+<h2 id="parsing-the-sample-data">Parsing the Sample Data</h2>
 <p>I had the <strong>Reuters-21578 Text Categorization Collection</strong> (<a href="https://kdd.ics.uci.edu/databases/reuters21578/reuters21578.html">link</a>) saved in my bookmarks and it seems like the perfect time to download it and check it out.  The description of the dataset tells us:</p>
 <blockquote>
 <p>This is a collection of documents that appeared on Reuters newswire in 1987. The documents were assembled and indexed with categories.</p>
@@ -165,7 +165,7 @@ on<span class="w"> </span>February<span class="w"> </span>27.
 </figure>
 
 <p>Which reads weird but <em>is</em> actually in the original data.  The first thousand of these articles ought to be good to practice on, then later I can pop in the rest if I want.</p>
-<h2 id="dockerized-kibana-and-elasticsearch">Dockerized Kibana and Elasticsearch<a class="headerlink" href="#dockerized-kibana-and-elasticsearch" title="Permanent link">&para;</a></h2>
+<h2 id="dockerized-kibana-and-elasticsearch">Dockerized Kibana and Elasticsearch</h2>
 <p>I'll be using the full <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-compose-file">docker compose yaml</a> and .env file from ES.  I felt bad not leaving the SSL stuff in during my first part of this post series, so it's back in now.  One <code>docker compose up</code> later and I'm ready to go to <localhost:5601> and get started.</p>
 <p>Going into the <strong>Search</strong> section, I find <strong>Upload a File</strong>.  I'll do that to make sure my files make sense to ES.</p>
 <figure>
@@ -277,7 +277,7 @@ on<span class="w"> </span>February<span class="w"> </span>27.
 </figure>
 
 <p>Yes!  It worked.  I tried a simple full-text search first before doing anything fancy.</p>
-<h2 id="todo-things">TODO THINGS<a class="headerlink" href="#todo-things" title="Permanent link">&para;</a></h2>
+<h2 id="todo-things">TODO THINGS</h2>
 <p>This is a placeholder for me to write the rest of this post.  Make a pipeline, do kNN, and do ELSER!</p>
 <!-- ## Next Time
 

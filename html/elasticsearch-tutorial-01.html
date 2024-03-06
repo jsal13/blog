@@ -20,7 +20,7 @@
     
 
     <div id="post-content">
-        <h1 id="the-elasticsearch-tutorial-part-1-full-search">The Elasticsearch Tutorial: Part 1, Full Search<a class="headerlink" href="#the-elasticsearch-tutorial-part-1-full-search" title="Permanent link">&para;</a></h1>
+        <h1 id="the-elasticsearch-tutorial-part-1-full-search">The Elasticsearch Tutorial: Part 1, Full Search</h1>
 <!-- ID: 202402240010 -->
 <p>Last Updated: <em>2024-02-24</em></p>
 <hr />
@@ -35,9 +35,9 @@
 </ul>
 </blockquote>
 <p>Huh, neat.  Full-text keyword searches is what I generally think of when I see Elastisearch, and I know very little about dense vector embeddings right now &mdash; let alone how I'd generate, store, and search them!  I have zero familiarity with the ELSER model but I'm guessing that the "ELS" is for "Elastic Search".  The RRF algorithm sounds vaguely like the page-rank algorithm but I'll see when I get to it.</p>
-<h2 id="setting-things-up-for-the-tutorial">Setting Things up for the Tutorial<a class="headerlink" href="#setting-things-up-for-the-tutorial" title="Permanent link">&para;</a></h2>
+<h2 id="setting-things-up-for-the-tutorial">Setting Things up for the Tutorial</h2>
 <p>Since I'm using docker compose to run my local elastisearch toy, I need to increase our Docker memory limit in WSL to 4GB, as per <a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_configure_and_start_the_cluster">this note</a>.  The rest is easy: copy their <code>.env</code> and <code>docker-compose.yaml</code> file (on the same page as the note) and <code>docker compose up</code>.  After a few seconds I'm off to the races.</p>
-<h2 id="the-starter-application">The Starter Application<a class="headerlink" href="#the-starter-application" title="Permanent link">&para;</a></h2>
+<h2 id="the-starter-application">The Starter Application</h2>
 <p>This tutorial has a pre-written <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/starter-project">Starter Application</a>, which means that I'm going to have to look through and investigate what this application does before I move on.  I might not wind up needing it.</p>
 <p>It's a flask app which appears to function as a frontend for querying and getting results.  Since it's not something that I'm ever going to use after the tutorial I'm going to ignore most of it and run my own scripts instead.  However, they included a <strong>JSON of sample data</strong> where each record looks like this:</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
@@ -60,7 +60,7 @@
 </code></pre></div></td></tr></table></div>
 
 <p>I've truncated the string in "content" so it would fit here.  Awesome, sample data!</p>
-<h2 id="full-text-search">Full-Text Search<a class="headerlink" href="#full-text-search" title="Permanent link">&para;</a></h2>
+<h2 id="full-text-search">Full-Text Search</h2>
 <p>Ah, this part goes over the ES <em>Python</em> client, which is why they included a <em>Python</em> flask sample app.  Makes sense.  I'll blaze my own path here since all I need is to write some code to query my local ES.  The endpoint to interact with my ES cluster is <localhost:9200>.</p>
 <p>After making a tiny venv to use, I install the Python <code>elasticsearch</code> package.  Let's see what this little guy can do.  Following the tutorial with slight modifications, I try:</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
@@ -133,7 +133,7 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 
 <p>Great!  The <code>elasticsearch.Elasticsearch()</code> class is a client class which takes a host as its first parameter. I can make sure it connected to a cluster with the <code>.info()</code> method.  </p>
 <p>What's next?  Maybe we put in a document?</p>
-<h2 id="create-an-index">Create an Index<a class="headerlink" href="#create-an-index" title="Permanent link">&para;</a></h2>
+<h2 id="create-an-index">Create an Index</h2>
 <p>The tutorial defines two important concepts here.</p>
 <p>Roughly, a <strong>document</strong> is a collection of fields with their associated values and an <strong>index</strong> is a collection of documents.  What do they mean by "collection of fields with their associated values", though?  Is this like JSON?</p>
 <blockquote>
@@ -374,7 +374,7 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 </code></pre></div></td></tr></table></div>
 
 <p>Note that the <code>sample-data.json</code> is the data that was included in the tutorial's sample application.</p>
-<h2 id="search-basics">Search Basics<a class="headerlink" href="#search-basics" title="Permanent link">&para;</a></h2>
+<h2 id="search-basics">Search Basics</h2>
 <p>The search method will also sit in the <code>Search</code> class and looks like this:</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
 <span class="normal">2</span>
@@ -461,7 +461,7 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 </code></pre></div></td></tr></table></div>
 
 <p>The Python equivalent is how I expected it to look, similar to our above match query.</p>
-<h2 id="pagination">Pagination<a class="headerlink" href="#pagination" title="Permanent link">&para;</a></h2>
+<h2 id="pagination">Pagination</h2>
 <p>Everyone's <em>favorite</em>: pagination.  Frustrating to keep track of, annoying when it errors out.  Luckily, it's not too bad here:</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
 <span class="normal">2</span>
@@ -482,7 +482,7 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 
 <p>Similar to how I'd expect it, with the exception of the underscore in <code>from_</code>.</p>
 <p>Not much else going on here, so I'll move on.</p>
-<h2 id="boolean-queries-and-filtering">Boolean Queries and Filtering<a class="headerlink" href="#boolean-queries-and-filtering" title="Permanent link">&para;</a></h2>
+<h2 id="boolean-queries-and-filtering">Boolean Queries and Filtering</h2>
 <p>The structure of the booleans, even after reading the tutorial page, was a bit fuzzy to me.  I looked up <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html">an example</a> which gives the gist of it:</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -584,7 +584,7 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <li>The results <em>must not</em> have an <code>age</code>in that range.</li>
 </ul>
 <p>Reasonable enough!  This summarizes the querying in this section of the tutorial.  The only other thing they go over is the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html">match_all</a> query which, as you might imagine, matches every document.  This is useful if, for example, only a filter is selected and we want to filter through all the documents instead of looking for matches.</p>
-<h2 id="aggregation">Aggregation<a class="headerlink" href="#aggregation" title="Permanent link">&para;</a></h2>
+<h2 id="aggregation">Aggregation</h2>
 <p>The last part of the Vector Search section is about "Faceted Search" which is a pattern where users search something and when the result is returned the user is presented with a list of <em>suggested filters</em> which they can add to the query.</p>
 <p>For example, if the user searched "work from home policy" then the results may contain articles from 2018, 2019, 2020, etc.  The user can be shown these years so that they can opt to choose one or more of these to further filter documents.</p>
 <p>The most important part here for me right now is the <em>aggregation</em>.  It's easy to understand ES's <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-terms-aggregation.html">Terms Aggregation</a> with an example, which I copy from that link:</p>
@@ -649,7 +649,7 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 </code></pre></div></td></tr></table></div>
 
 <p>In <code>aggregations &gt; genres</code> there's a bunch of keys along with the number of docs containing those keys.  Notice I didn't do any filtering or boolean stuff in the query but I could have and that would have made the aggregation only count those results.  It feels close to using <code>GROUP BY</code> and <code>COUNT()</code> in SQL.</p>
-<h2 id="next-time">Next Time<a class="headerlink" href="#next-time" title="Permanent link">&para;</a></h2>
+<h2 id="next-time">Next Time</h2>
 <p>The "Full-Text Search" part of the ES tutorial ends here.  In the next post I'll cover the next parts of the tutorial: Vector Search and Semantic Search, as well as whatever might come out of those that piques my interest.</p>
     </div>
 </body>

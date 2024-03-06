@@ -13,9 +13,9 @@ I'll work with [this documentation](https://spark.apache.org/docs/latest/api/pyt
 
 If I'm going to be querying or transforming data, my rule of thumb is:
 
-- If I've got **Small Data** (data that can fit in memory on whatever machine I'm using), use Polars/Pandas.
-- If I've got **Medium Data** (data that can't fit in memory but _can_ fit on disk), use Dask.
-- If I've got **Big Data** (data that can't fit in memory or on my local machine's disk), use Spark.
+- **Small Data** (data that can fit in memory on whatever machine I'm using), use **Polars/Pandas**.
+- **Medium Data** (data that can't fit in memory but _can_ fit on disk), use **Dask**.
+- **Big Data** (data that can't fit in memory or on my local machine's disk), use **Spark**.
 
 Since my work has been mainly with small and medium data, with "samples of big data" often being good enough, I haven't needed to write many Spark jobs.  The ones I have written are mainly of the form: we have a ton of data in a [data lakehouse](https://cloud.google.com/discover/what-is-a-data-lakehouse) and we need to take a bunch of that data, transform it somehow, and maybe join it with some other data.  I'm sure there are other workflows but this is the one I'm used to.
 
@@ -54,9 +54,61 @@ The quickstart also notes that DataFrames are implemented on top of RDDs, which 
 
 I'm not going to worry much about this detail in this blog post but it's nice to know.
 
+To begin, I need to create a `SparkSession`, which acts sort of like a command center: it connects PySpark to all the stuff in my Spark cluster.  According to [this page](https://sparkbyexamples.com/spark/sparksession-explained-with-examples/), `SparkSession` was created when some of the other contexts (SQL, Hive, Streaming, etc.) were smashed together.  In any case, I need to define this to continue:
 
+```python
+from pyspark.sql import SparkSession
 
+spark = SparkSession.builder.getOrCreate()
+```
 
+Creating a Spark DataFrame is similar to Pandas but is a method of my `SparkSession` object and has a weird lowerCamelCase function name: `createDataFrame()`.
+
+```python
+from datetime import datetime, date
+from pyspark.sql import Row
+
+df = spark.createDataFrame([
+    Row(a=1, b=2., c='str1', d=date(2000, 1, 1), e=datetime(2000, 1, 1, 12, 0)),
+    Row(a=2, b=3., c='str2', d=date(2000, 2, 1), e=datetime(2000, 1, 2, 12, 0)),
+    Row(a=4, b=5., c='str3', d=date(2000, 3, 1), e=datetime(2000, 1, 3, 12, 0))
+])
+df
+```
+
+The `Row` [objects](https://spark.apache.org/docs/3.1.3/api/python/reference/api/pyspark.sql.Row.html) seem to function like dataclass objects; I'm sure they do some important stuff under-the-hood but I'm not going to worry about it right now.
+
+One important thing I notice: this does _not_ return the data when I call `df`: it returns the _schema_, which makes sense since I know that DataFrames are lazily evaluated.
+
+Making a DataFrame from pandas is pretty easy: `df = spark.createDataFrame(pandas_df)`.  Fairly straight-forward there.
+
+I can print out the values and the schema explicitly with the `.show()` and `.printSchema()` methods:
+
+```raw
+df.show(3)
+df.printSchema()
+
++---+---+-------+----------+----------------+
+|  a|  b|      c|         d|               e|
++---+---+-------+----------+----------------+
+|  1|2.0|str1|2000-01-01|2000-01-01 12:00:00|
+|  2|3.0|str2|2000-02-01|2000-01-02 12:00:00|
+|  3|4.0|str3|2000-03-01|2000-01-03 12:00:00|
++---+---+-------+----------+----------------+
+
+root
+ |-- a: long (nullable = true)
+ |-- b: double (nullable = true)
+ |-- c: string (nullable = true)
+ |-- d: date (nullable = true)
+ |-- e: timestamp (nullable = true)
+```
+
+They give a few tips and tricks (`df.show(1, vertical=True)` gives a vertical view, `.columns` gives a list of columns, `.describe().show()` gives min, max, stdev, count, and mean of each column).  This will become important when we get our hands dirty but, for now, it's one of those things I'll put in the back of my head and "remember" that it exists later so I can look up the syntax.  
+
+Getting the data from Spark is easy: I can use `.collect()` to get everything, `.tail(n)` to take `n` rows from the end, `.toPandas()` to convert the Spark DataFrame to a Pandas DataFrame.
+
+TODO: Do I really want to do this one?  It's just rehashing the tutorial.  I think maybe doing a project would be better.
 <!-- ## Next Time
 
 The next thing that the tutorial recommends doing is a [Chatbot Tutorial](https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/welcome).  Since this tutorial goes over the [Langchain](https://www.langchain.com/) project and works with some concepts I'm not familiar with, I think it might be fun to try out.

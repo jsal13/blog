@@ -11,7 +11,7 @@ DEST_PATH = Path("html")
 
 # Extensions for Markdown.
 EXTENSIONS = ["fenced_code", "codehilite", "toc"]
-EXTENSION_CONFIGS = {"toc": {"permalink": True}, "codehilite": {"linenums": True}}
+EXTENSION_CONFIGS = {"codehilite": {"linenums": True}}
 
 
 @dataclass

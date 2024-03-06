@@ -20,13 +20,13 @@
     
 
     <div id="post-content">
-        <h1 id="the-elasticsearch-tutorial-part-5-chatbot-example">The Elasticsearch Tutorial: Part 5, Chatbot Example<a class="headerlink" href="#the-elasticsearch-tutorial-part-5-chatbot-example" title="Permanent link">&para;</a></h1>
+        <h1 id="the-elasticsearch-tutorial-part-5-chatbot-example">The Elasticsearch Tutorial: Part 5, Chatbot Example</h1>
 <!-- ID: 202402240050 -->
 <p>Last Updated: <em>2024-02-29</em></p>
 <hr />
 <p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
 <p>This time I'll be going through the <a href="https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/chatbot-rag-app/setup">chatbot tutorial</a>.</p>
-<h2 id="preperation">Preperation<a class="headerlink" href="#preperation" title="Permanent link">&para;</a></h2>
+<h2 id="preperation">Preperation</h2>
 <p>The first few pages of the chatbot tutorial tells me to download the repo (<code>git clone https://github.com/elastic/elasticsearch-labs</code>), make a virtual env for python, (<code>python3 -m venv .venv; source .venv/bin/activate;</code>) and install the packages (<code>pip install -r requirements.txt</code>).  Nothing wild so far!</p>
 <p><strong>A mini-adventure</strong>: I was at Starbucks before a class when I was cloning the repo and the wifi there isn't great.  It refused to download beyond 1%.  I tried to use the <code>--depth=1</code> <a href="https://github.blog/2020-12-21-get-up-to-speed-with-partial-clone-and-shallow-clone/">flag</a> and after 4% I got a different error message:</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
@@ -51,7 +51,7 @@ fatal:<span class="w"> </span>fetch-pack:<span class="w"> </span>invalid<span cl
 <p>It did.  Whew.  I copy the <code>.env.example</code> to <code>.env</code> start my docker compose ES clusters.  Luckily, I had already downloaded these before I came to the coffee shop since otherwise there's no way that would <code>docker pull</code> in less than an hour and I'd have to give up until I went home.</p>
 <!-- The next part has me downloading an LLM, which I _don't_ have locally.  I'll have to download this when I get home.  In the meantime, let me look at what the example app in this repo does. -->
 
-<h2 id="the-example-app">The Example App<a class="headerlink" href="#the-example-app" title="Permanent link">&para;</a></h2>
+<h2 id="the-example-app">The Example App</h2>
 <p>Looking at in the app folder we have an <code>api</code>, <code>data</code>, and <code>frontend</code> folder, and I'll look at those in a minute.  Otherwise, we have some config files and a dockerfile that looks like it runs the flask application.  </p>
 <p>In the <code>frontend</code> folder we have some things I'm half-familiar with.  I'm familiar with typescript and the Vue framework, but I'm not as familiar with React. Given my limited knowledge, I scanned through the code and found it was mostly things to make the search app look and feel nice.  It's possible we could get the same information with API calls, which tells me that I don't need to spend too much time investigating every piece of this frontend.  I'll move on.</p>
 <p>The <code>data</code> folder is, surprise, data.  There is also a python script.  The <code>main()</code> function of this looks like this:</p>
@@ -150,7 +150,7 @@ fatal:<span class="w"> </span>fetch-pack:<span class="w"> </span>invalid<span cl
 <p>Two files left: <code>chat.py</code> and <code>app.py</code>.  The <code>chat.py</code> file, which I'll probably look at a bit harder later because it seems like it's doing some heavy lifting to convert the question from the user into something usable, but the tl;dr of the file is, "Takes questions, splits out answers."  </p>
 <p>The <code>api.py</code> file has two endpoints: <code>/</code> which sends us to the index page, and <code>/app/chat/</code> which takes the question and returns the response that <code>elasticsearch_client.py</code> needs.  There's also a cli command to create or recreate the ES index.</p>
 <p>That's all of the sample app stuff.  As I parse through what is happening I'll most likely need to revisit some of these files later, but it's nice to know they exist and it's nice to know where things are.</p>
-<h2 id="python-back-end">Python Back End<a class="headerlink" href="#python-back-end" title="Permanent link">&para;</a></h2>
+<h2 id="python-back-end">Python Back End</h2>
 <p>Running <code>flask create-index</code> gives me an error.</p>
 <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>elastic_transport.TlsError:<span class="w"> </span>TLS<span class="w"> </span>error<span class="w"> </span>caused<span class="w"> </span>by:<span class="w"> </span>TlsError<span class="o">(</span>TLS<span class="w"> </span>error<span class="w"> </span>caused<span class="w"> </span>by:<span class="w"> </span>SSLError<span class="o">([</span>SSL:<span class="w"> </span>CERTIFICATE_VERIFY_FAILED<span class="o">]</span><span class="w"> </span>certificate<span class="w"> </span>verify<span class="w"> </span>failed<span class="w"> </span><span class="o">(</span>_ssl.c:1007<span class="o">)))</span>
 </code></pre></div></td></tr></table></div>
