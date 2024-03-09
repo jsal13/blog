@@ -10,7 +10,7 @@ TEMPLATE_PATH = Path("template.html")
 DEST_PATH = Path("html")
 
 # Extensions for Markdown.
-EXTENSIONS = ["fenced_code", "codehilite", "toc"]
+EXTENSIONS = ["fenced_code", "codehilite", "toc", "admonition"]
 EXTENSION_CONFIGS = {"codehilite": {"linenums": True}}
 
 

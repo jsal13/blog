@@ -29,9 +29,9 @@
 <h2 id="what-do-i-know-about-spark-already">What Do I Know About Spark Already?</h2>
 <p>If I'm going to be querying or transforming data, my rule of thumb is:</p>
 <ul>
-<li>If I've got <strong>Small Data</strong> (data that can fit in memory on whatever machine I'm using), use Polars/Pandas.</li>
-<li>If I've got <strong>Medium Data</strong> (data that can't fit in memory but <em>can</em> fit on disk), use Dask.</li>
-<li>If I've got <strong>Big Data</strong> (data that can't fit in memory or on my local machine's disk), use Spark.</li>
+<li><strong>Small Data</strong> (data that can fit in memory on whatever machine I'm using), use <strong>Polars/Pandas</strong>.</li>
+<li><strong>Medium Data</strong> (data that can't fit in memory but <em>can</em> fit on disk), use <strong>Dask</strong>.</li>
+<li><strong>Big Data</strong> (data that can't fit in memory or on my local machine's disk), use <strong>Spark</strong>.</li>
 </ul>
 <p>Since my work has been mainly with small and medium data, with "samples of big data" often being good enough, I haven't needed to write many Spark jobs.  The ones I have written are mainly of the form: we have a ton of data in a <a href="https://cloud.google.com/discover/what-is-a-data-lakehouse">data lakehouse</a> and we need to take a bunch of that data, transform it somehow, and maybe join it with some other data.  I'm sure there are other workflows but this is the one I'm used to.</p>
 <h2 id="docker-saving-the-day">Docker Saving The Day</h2>
@@ -114,7 +114,7 @@
 <span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c">df</span><span class="nt">.</span><span class="c">show()</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c">df</span><span class="nt">.</span><span class="c">show(3)</span>
 <span class="c">df</span><span class="nt">.</span><span class="c">printSchema()</span>
 
 <span class="nb">+---+---+-------+----------+----------------+</span>
@@ -133,6 +133,9 @@
 <span class="c"> |</span><span class="nb">--</span><span class="c"> e: timestamp (nullable = true)</span>
 </code></pre></div></td></tr></table></div>
 
+<p>They give a few tips and tricks (<code>df.show(1, vertical=True)</code> gives a vertical view, <code>.columns</code> gives a list of columns, <code>.describe().show()</code> gives min, max, stdev, count, and mean of each column).  This will become important when we get our hands dirty but, for now, it's one of those things I'll put in the back of my head and "remember" that it exists later so I can look up the syntax.  </p>
+<p>Getting the data from Spark is easy: I can use <code>.collect()</code> to get everything, <code>.tail(n)</code> to take <code>n</code> rows from the end, <code>.toPandas()</code> to convert the Spark DataFrame to a Pandas DataFrame.</p>
+<p>TODO: Do I really want to do this one?  It's just rehashing the tutorial.  I think maybe doing a project would be better.</p>
 <!-- ## Next Time
 
 The next thing that the tutorial recommends doing is a [Chatbot Tutorial](https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/welcome).  Since this tutorial goes over the [Langchain](https://www.langchain.com/) project and works with some concepts I'm not familiar with, I think it might be fun to try out.

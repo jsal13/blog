@@ -145,7 +145,7 @@ es = Elasticsearch(hosts=ES_ADDRESS, api_key=API_KEY, verify_certs=False)
 print(es.info())
 ```
 
-I realized something at this point.  My old script was making files --- that I would have to re-read and import into this.  Why didn't I just copy-paste this into my previous script and do it all at once?  Why not, indeed.
+I realized something at this point.  My old script was making files that I would have to re-read and import into this.  Why didn't I just copy-paste this into my previous script and do it all at once?  Why not, indeed.
 
 Here's the whole shebang:
 

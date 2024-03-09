@@ -48,3 +48,56 @@ figure {
 td.linenos {
     padding-right: 0.25rem;
 }
+
+/* ADMONITION */
+.admonition {
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.admonition>p {
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.admonition.note {
+    color: #3a87ad;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+.admonition.note>p:first-child::before {
+    content: '\26A0';
+    padding-right: 4px;
+    font-weight: normal;
+}
+
+.admonition.warning {
+    color: #c09853;
+    background-color: #fcf8e3;
+    border-color: #fbeed5;
+}
+
+.admonition.warning>p:first-child::before {
+    content: '\26A0';
+    font-weight: normal;
+}
+
+.admonition.danger {
+    color: #b94a48;
+    background-color: #f2dede;
+    border-color: #eed3d7;
+}
+
+.admonition.danger>p:first-child::before {
+    content: '\26A1';
+    font-weight: normal;
+}
+
+.admonition-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin: 0 !important;
+    padding: 0 !important;
+}
