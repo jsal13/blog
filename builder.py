@@ -58,7 +58,7 @@ class Converter:
 
         # Add info to metadata if not a draft.
         file_name = source_path.split("/")[-1]
-        if file_name[0] != "_":  # If NOT a draft...
+        if "__" not in file_name:  # If NOT a draft...
             post_obj = Post(
                 _id=_id, title=title, source_path=source_path, dest_path=dest_path
             )
