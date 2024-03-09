@@ -5,6 +5,10 @@ Last Updated: _2024-02-24_
 
 ---
 
+> **Note**
+>
+> This is a note
+
 These will be notes from doing the [elasticsearch tutorial](https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome).  This will be written as I go so that you can go on this `journey` with me.
 
 What am I going to learn?  According to the tutorial:
