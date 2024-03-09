@@ -6,5 +6,7 @@ default:
 build:
     @python builder.py
 
+# https://pygments.org/styles/
 generate-CSS:
-    pygmentize -S default -f html -a .codehilite > pygmentize.css
+    pygmentize -S lightbulb -O linenos=1 -f html -a .codehilite > ./css/pygmentize.css
+    

@@ -20,13 +20,13 @@
     
 
     <div id="post-content">
-        <h1>The Elasticsearch Tutorial: Part 4, Getting My Hands Dirty</h1>
-<!-- ID: 0040 -->
+        <h1 id="the-elasticsearch-tutorial-part-4-getting-my-hands-dirty">The Elasticsearch Tutorial: Part 4, Getting My Hands Dirty</h1>
+<!-- ID: 202402240040 -->
 <p>Last Updated: <em>2024-02-26</em></p>
 <hr />
 <p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
 <p>This time I'm going to do something a little different: I'm going to try out all of the things I've learned over the past few posts with some sample data and see what problems I run into.</p>
-<h2>Parsing the Sample Data</h2>
+<h2 id="parsing-the-sample-data">Parsing the Sample Data</h2>
 <p>I had the <strong>Reuters-21578 Text Categorization Collection</strong> (<a href="https://kdd.ics.uci.edu/databases/reuters21578/reuters21578.html">link</a>) saved in my bookmarks and it seems like the perfect time to download it and check it out.  The description of the dataset tells us:</p>
 <blockquote>
 <p>This is a collection of documents that appeared on Reuters newswire in 1987. The documents were assembled and indexed with categories.</p>
@@ -44,7 +44,29 @@
 from David D. Lewis' professional home page, currently: <a href="http://www.research.att.com/~lewis">http://www.research.att.com/~lewis</a></p>
 </blockquote>
 <p>Next, the README describes, in a lengthy bunch of sections, what "SGML" is and how to parse the <code>sgm</code> files.  There's a lot here but it sort of looks like XML so I'm just going to open one of the files and see what happens.  Here's what each of the sections looks like (body abbreviated with [...] by me):</p>
-<div class="codehilite"><pre><span></span><code><span class="nt">&lt;REUTERS</span><span class="w"> </span><span class="na">TOPICS=</span><span class="s">&quot;YES&quot;</span><span class="w"> </span><span class="na">LEWISSPLIT=</span><span class="s">&quot;TRAIN&quot;</span><span class="w"> </span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">&lt;REUTERS</span><span class="w"> </span><span class="na">TOPICS=</span><span class="s">&quot;YES&quot;</span><span class="w"> </span><span class="na">LEWISSPLIT=</span><span class="s">&quot;TRAIN&quot;</span><span class="w"> </span>
 <span class="w">    </span><span class="na">CGISPLIT=</span><span class="s">&quot;TRAINING-SET&quot;</span><span class="w"> </span><span class="na">OLDID=</span><span class="s">&quot;5544&quot;</span><span class="w"> </span><span class="na">NEWID=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
 <span class="nt">&lt;DATE&gt;</span>26-FEB-1987<span class="w"> </span>15:01:01.79<span class="nt">&lt;/DATE&gt;</span>
 <span class="nt">&lt;TOPICS&gt;&lt;D&gt;</span>cocoa<span class="nt">&lt;/D&gt;&lt;/TOPICS&gt;</span>
@@ -67,11 +89,36 @@ on<span class="w"> </span>February<span class="w"> </span>27.
 <span class="w"> </span>Reuter
 <span class="ni">&amp;#3;</span><span class="nt">&lt;/BODY&gt;&lt;/TEXT&gt;</span>
 <span class="nt">&lt;/REUTERS&gt;</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Looking at a few others gives us the same form.  Awesome!  I can pull out a few things here to make a slightly slimmer, more friendly-for-ES dataset.  We'll need the title and body of each of these.</p>
 <p>You might be thinking, "Oh, easy!  Just use <a href="https://stackoverflow.com/a/1732454">regular expressions on it</a>."  Alas, that would be a <em>grave error indeed</em>.  What I'll do is make a short <a href="https://beautiful-soup-4.readthedocs.io/en/latest/">Beautiful Soup</a> script in Python and scrape it that way.  </p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
 
 <span class="c1"># Open the sgm files... for now, just pick one.</span>
@@ -97,15 +144,19 @@ on<span class="w"> </span>February<span class="w"> </span>27.
         <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span>
     <span class="p">)</span> <span class="k">as</span> <span class="n">j</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">doc_data</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>Not elegant, but gets the job done.  The files each look something like:</p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COBANCO INC &lt;CBCO&gt; YEAR NET&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;26-FEB-1987 15:18:59.34earnusaF f0772reute r f </span>
 <span class="s2">[...] or five cts per shr.  Reuter&quot;</span>
 <span class="p">}</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <figure>
     <img src="../assets/images/elasticsearch-tutorial-04_blah.png"
@@ -114,7 +165,7 @@ on<span class="w"> </span>February<span class="w"> </span>27.
 </figure>
 
 <p>Which reads weird but <em>is</em> actually in the original data.  The first thousand of these articles ought to be good to practice on, then later I can pop in the rest if I want.</p>
-<h2>Dockerized Kibana and Elasticsearch</h2>
+<h2 id="dockerized-kibana-and-elasticsearch">Dockerized Kibana and Elasticsearch</h2>
 <p>I'll be using the full <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-compose-file">docker compose yaml</a> and .env file from ES.  I felt bad not leaving the SSL stuff in during my first part of this post series, so it's back in now.  One <code>docker compose up</code> later and I'm ready to go to <localhost:5601> and get started.</p>
 <p>Going into the <strong>Search</strong> section, I find <strong>Upload a File</strong>.  I'll do that to make sure my files make sense to ES.</p>
 <figure>
@@ -136,7 +187,15 @@ on<span class="w"> </span>February<span class="w"> </span>27.
 </figure>
 
 <p>Alas, they do not.  I get a "File Structure Cannot Be Determined" error.  Ugh.  I decide to make my own index ("New Index") and the ingestion type is via an API.  I choose Python for the language.  It tells me to generate an API key, and I do.  I had to update permissions for the API key to allow it to set <code>verify_certs=False</code> in my script below:</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
 
 <span class="c1"># Get API from the Kibana &quot;API Ingestion&quot; page.</span>
 <span class="n">API_KEY</span> <span class="o">=</span> <span class="s2">&quot;this_was_my_API_key&quot;</span>
@@ -145,11 +204,40 @@ on<span class="w"> </span>February<span class="w"> </span>27.
 <span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span><span class="n">hosts</span><span class="o">=</span><span class="n">ES_ADDRESS</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">API_KEY</span><span class="p">,</span> <span class="n">verify_certs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">info</span><span class="p">())</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>I realized something at this point.  My old script was making files --- that I would have to re-read and import into this.  Why didn't I just copy-paste this into my previous script and do it all at once?  Why not, indeed.</p>
 <p>Here's the whole shebang:</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
 <span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
 
@@ -179,7 +267,7 @@ on<span class="w"> </span>February<span class="w"> </span>27.
     <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title_txt</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">})</span>
 
 <span class="n">es</span><span class="o">.</span><span class="n">bulk</span><span class="p">(</span><span class="n">operations</span><span class="o">=</span><span class="n">operations</span><span class="p">)</span>
-</code></pre></div>
+</code></pre></div></td></tr></table></div>
 
 <p>As soon as this worked, I looked at the "Documents" section of the index and...</p>
 <figure>
@@ -189,7 +277,7 @@ on<span class="w"> </span>February<span class="w"> </span>27.
 </figure>
 
 <p>Yes!  It worked.  I tried a simple full-text search first before doing anything fancy.</p>
-<h2>TODO THINGS</h2>
+<h2 id="todo-things">TODO THINGS</h2>
 <p>This is a placeholder for me to write the rest of this post.  Make a pipeline, do kNN, and do ELSER!</p>
 <!-- ## Next Time
 

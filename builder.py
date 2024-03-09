@@ -9,6 +9,10 @@ import markdown
 TEMPLATE_PATH = Path("template.html")
 DEST_PATH = Path("html")
 
+# Extensions for Markdown.
+EXTENSIONS = ["fenced_code", "codehilite", "toc"]
+EXTENSION_CONFIGS = {"codehilite": {"linenums": True}}
+
 
 @dataclass
 class Post:
@@ -39,7 +43,9 @@ class Converter:
             title = re.findall("^# (.*)", source_content)[0]
             _id = re.findall("<!-- ID: (\d+) -->", source_content)[0]
             html_body = markdown.markdown(
-                source_content, extensions=["fenced_code", "codehilite"]
+                source_content,
+                extensions=EXTENSIONS,
+                extension_configs=EXTENSION_CONFIGS,
             )
 
             html = (
@@ -53,7 +59,9 @@ class Converter:
         # Add info to metadata if not a draft.
         file_name = source_path.split("/")[-1]
         if file_name[0] != "_":  # If NOT a draft...
-            post_obj = Post(_id=_id, title=title, source_path=source_path, dest_path=dest_path)
+            post_obj = Post(
+                _id=_id, title=title, source_path=source_path, dest_path=dest_path
+            )
             self.post_info.append(post_obj)
 
     def convert_all_md_to_html(self) -> None:
@@ -63,7 +71,7 @@ class Converter:
     def create_index_html(self) -> None:
         """Create index.html with ToC."""
         toc = []
-        
+
         # Sort posts by _id value, smallest last.
         self.post_info.sort(key=lambda x: x._id, reverse=True)
 

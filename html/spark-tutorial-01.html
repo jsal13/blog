@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apache Spark Tutorial: Part 1, </title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pygmentize.css">
+
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+</head>
+
+<body>
+
+    
+
+    <div id="post-content">
+        <h1 id="apache-spark-tutorial-part-1">Apache Spark Tutorial: Part 1,</h1>
+<!-- ID: 202403060010 -->
+<p>Last Updated: <em>2024-03-06</em></p>
+<hr />
+<p>Spark is a "unified analytics engine for large-scale data processing" and, odds are, if you've worked in the data space you've heard about it.  I've used Spark a little in the past but, <strong>for the purposes of this blog post I will act as if I don't know much about it so that you, the reader, can learn along with me.</strong></p>
+<p>I'll work with <a href="https://spark.apache.org/docs/latest/api/python/getting_started/index.html">this documentation</a> from the Apache Spark website itself.  I'll go over most of the Quickstart stuff, then see what else I want to do.  <strong>Most of the time that I say "Spark", I'll be viewing it through the lense of using PySpark to communicate with it.</strong></p>
+<h2 id="what-do-i-know-about-spark-already">What Do I Know About Spark Already?</h2>
+<p>If I'm going to be querying or transforming data, my rule of thumb is:</p>
+<ul>
+<li>If I've got <strong>Small Data</strong> (data that can fit in memory on whatever machine I'm using), use Polars/Pandas.</li>
+<li>If I've got <strong>Medium Data</strong> (data that can't fit in memory but <em>can</em> fit on disk), use Dask.</li>
+<li>If I've got <strong>Big Data</strong> (data that can't fit in memory or on my local machine's disk), use Spark.</li>
+</ul>
+<p>Since my work has been mainly with small and medium data, with "samples of big data" often being good enough, I haven't needed to write many Spark jobs.  The ones I have written are mainly of the form: we have a ton of data in a <a href="https://cloud.google.com/discover/what-is-a-data-lakehouse">data lakehouse</a> and we need to take a bunch of that data, transform it somehow, and maybe join it with some other data.  I'm sure there are other workflows but this is the one I'm used to.</p>
+<h2 id="docker-saving-the-day">Docker Saving The Day</h2>
+<p>I do not want to try installing Spark on my laptop.  I've had to do it in the past and it is painful. Luckily, Docker is there for me!  I pull down Spark with a nice <a href="https://quay.io/repository/jupyter/pyspark-notebook?tab=tags">Jupyter-created image</a>:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>docker<span class="w"> </span>pull<span class="w"> </span>quay.io/jupyter/pyspark-notebook:python-3.11
+</code></pre></div></td></tr></table></div>
+
+<p>Reading <a href="https://jupyter-docker-stacks.readthedocs.io/en/latest/index.html">the documentation</a>, it looks like this is how I ought to run the image:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-p<span class="w"> </span><span class="m">10000</span>:8888<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">PWD</span><span class="si">}</span><span class="s2">&quot;</span>:/home/jovyan/work<span class="w"> </span><span class="se">\</span>
+<span class="w">     </span>quay.io/jupyter/pyspark-notebook:python-3.11
+</code></pre></div></td></tr></table></div>
+
+<p>The <code>-v</code> flag mounts the current directory which allows the work I'm doing to persist after the docker container is terminated.</p>
+<p>I create the container and everything looks good.  Let's go to the first Quickstart tutorial.</p>
+<h2 id="quickstart-dataframe">Quickstart: DataFrame</h2>
+<p>The <a href="https://spark.apache.org/docs/latest/api/python/getting_started/quickstart_df.html">DataFrame quickstart</a> begins by going over a few important details which I'll recount here:</p>
+<ul>
+<li>
+<p>DataFrame are <em>lazily evaluated</em>.  I prefer the term <em>call-by-need</em> for this, but either way the idea is that the expression (or, in this case, the DataFrame) isn't evaluated until it's needed.</p>
+</li>
+<li>
+<p>Similarly, when Spark "transforms" data it does not do so <em>immediately</em> but, rather, plans how to compute the transform for later; it saves the computation for when certain things are explicitly called by the user.</p>
+</li>
+</ul>
+<p>The quickstart also notes that DataFrames are implemented on top of RDDs, which the linked page gives us the definition of:</p>
+<blockquote>
+<p>The main abstraction Spark provides is a resilient distributed dataset (RDD), which is a collection of elements partitioned across the nodes of the cluster that can be operated on in parallel.</p>
+</blockquote>
+<p>I'm not going to worry much about this detail in this blog post but it's nice to know.</p>
+<p>To begin, I need to create a <code>SparkSession</code>, which acts sort of like a command center: it connects PySpark to all the stuff in my Spark cluster.  According to <a href="https://sparkbyexamples.com/spark/sparksession-explained-with-examples/">this page</a>, <code>SparkSession</code> was created when some of the other contexts (SQL, Hive, Streaming, etc.) were smashed together.  In any case, I need to define this to continue:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+
+<p>Creating a Spark DataFrame is similar to Pandas but is a method of my <code>SparkSession</code> object and has a weird lowerCamelCase function name: <code>createDataFrame()</code>.</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">Row</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">([</span>
+    <span class="n">Row</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;str1&#39;</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">e</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+    <span class="n">Row</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;str2&#39;</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">e</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+    <span class="n">Row</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;str3&#39;</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">e</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="p">])</span>
+<span class="n">df</span>
+</code></pre></div></td></tr></table></div>
+
+<p>The <code>Row</code> <a href="https://spark.apache.org/docs/3.1.3/api/python/reference/api/pyspark.sql.Row.html">objects</a> seem to function like dataclass objects; I'm sure they do some important stuff under-the-hood but I'm not going to worry about it right now.</p>
+<p>One important thing I notice: this does <em>not</em> return the data when I call <code>df</code>: it returns the <em>schema</em>, which makes sense since I know that DataFrames are lazily evaluated.</p>
+<p>Making a DataFrame from pandas is pretty easy: <code>df = spark.createDataFrame(pandas_df)</code>.  Fairly straight-forward there.</p>
+<p>I can print out the values and the schema explicitly with the <code>.show()</code> and <code>.printSchema()</code> methods:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c">df</span><span class="nt">.</span><span class="c">show()</span>
+<span class="c">df</span><span class="nt">.</span><span class="c">printSchema()</span>
+
+<span class="nb">+---+---+-------+----------+----------------+</span>
+<span class="c">|  a|  b|      c|         d|               e|</span>
+<span class="nb">+---+---+-------+----------+----------------+</span>
+<span class="c">|  1|2</span><span class="nt">.</span><span class="c">0|str1|2000</span><span class="nb">-</span><span class="c">01</span><span class="nb">-</span><span class="c">01|2000</span><span class="nb">-</span><span class="c">01</span><span class="nb">-</span><span class="c">01 12:00:00|</span>
+<span class="c">|  2|3</span><span class="nt">.</span><span class="c">0|str2|2000</span><span class="nb">-</span><span class="c">02</span><span class="nb">-</span><span class="c">01|2000</span><span class="nb">-</span><span class="c">01</span><span class="nb">-</span><span class="c">02 12:00:00|</span>
+<span class="c">|  3|4</span><span class="nt">.</span><span class="c">0|str3|2000</span><span class="nb">-</span><span class="c">03</span><span class="nb">-</span><span class="c">01|2000</span><span class="nb">-</span><span class="c">01</span><span class="nb">-</span><span class="c">03 12:00:00|</span>
+<span class="nb">+---+---+-------+----------+----------------+</span>
+
+<span class="c">root</span>
+<span class="c"> |</span><span class="nb">--</span><span class="c"> a: long (nullable = true)</span>
+<span class="c"> |</span><span class="nb">--</span><span class="c"> b: double (nullable = true)</span>
+<span class="c"> |</span><span class="nb">--</span><span class="c"> c: string (nullable = true)</span>
+<span class="c"> |</span><span class="nb">--</span><span class="c"> d: date (nullable = true)</span>
+<span class="c"> |</span><span class="nb">--</span><span class="c"> e: timestamp (nullable = true)</span>
+</code></pre></div></td></tr></table></div>
+
+<!-- ## Next Time
+
+The next thing that the tutorial recommends doing is a [Chatbot Tutorial](https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/welcome).  Since this tutorial goes over the [Langchain](https://www.langchain.com/) project and works with some concepts I'm not familiar with, I think it might be fun to try out.
+
+See you there! -->
+    </div>
+</body>
+
+</html>

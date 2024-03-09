@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Elasticsearch Tutorial: Part 5, Chatbot Example</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pygmentize.css">
+
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+</head>
+
+<body>
+
+    
+
+    <div id="post-content">
+        <h1 id="the-elasticsearch-tutorial-part-5-chatbot-example">The Elasticsearch Tutorial: Part 5, Chatbot Example</h1>
+<!-- ID: 202402240050 -->
+<p>Last Updated: <em>2024-02-29</em></p>
+<hr />
+<p>These will be a continuation of notes from doing the <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome">elasticsearch tutorial</a>.  This will be written as I go so that you can go on this <code>journey</code> with me.</p>
+<p>This time I'll be going through the <a href="https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/chatbot-rag-app/setup">chatbot tutorial</a>.</p>
+<h2 id="preperation">Preperation</h2>
+<p>The first few pages of the chatbot tutorial tells me to download the repo (<code>git clone https://github.com/elastic/elasticsearch-labs</code>), make a virtual env for python, (<code>python3 -m venv .venv; source .venv/bin/activate;</code>) and install the packages (<code>pip install -r requirements.txt</code>).  Nothing wild so far!</p>
+<p><strong>A mini-adventure</strong>: I was at Starbucks before a class when I was cloning the repo and the wifi there isn't great.  It refused to download beyond 1%.  I tried to use the <code>--depth=1</code> <a href="https://github.blog/2020-12-21-get-up-to-speed-with-partial-clone-and-shallow-clone/">flag</a> and after 4% I got a different error message:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>error:<span class="w"> </span>RPC<span class="w"> </span>failed<span class="p">;</span><span class="w"> </span>curl<span class="w"> </span><span class="m">16</span><span class="w"> </span>Error<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>HTTP2<span class="w"> </span>framing<span class="w"> </span>layer
+error:<span class="w"> </span><span class="m">8103</span><span class="w"> </span>bytes<span class="w"> </span>of<span class="w"> </span>body<span class="w"> </span>are<span class="w"> </span>still<span class="w"> </span>expected
+fetch-pack:<span class="w"> </span>unexpected<span class="w"> </span>disconnect<span class="w"> </span><span class="k">while</span><span class="w"> </span>reading<span class="w"> </span>sideband<span class="w"> </span>packet
+fatal:<span class="w"> </span>early<span class="w"> </span>EOF
+fatal:<span class="w"> </span>fetch-pack:<span class="w"> </span>invalid<span class="w"> </span>index-pack<span class="w"> </span>output
+</code></pre></div></td></tr></table></div>
+
+<p>Huh.  That's a new one.  I found <a href="https://github.com/orgs/community/discussions/48568#discussioncomment-5108608">this answer</a> and decided to reset my wifi connection.  Nothing.  I decided to turn the wifi off and on again.  Nothing.  I decided to restart my laptop and &mdash; something!  The download sped to 81% and... failure.  One more time.  It looked like it got to 100% but gave me an error:</p>
+<figure>
+    <img src="../assets/images/elasticsearch-tutorial-05_gitclone.png"
+         alt="So close.">
+    <figcaption>Oh come on!</figcaption>
+</figure>
+
+<p>As I was writing up this part of the blog I tried one last time and finally &mdash; finally! &amp;mdash it finished and I had a shallow clone of the repo!  That ends that mini-advnture.  Surely, installing the Python packages will go smoother &mdash;</p>
+<p>It did.  Whew.  I copy the <code>.env.example</code> to <code>.env</code> start my docker compose ES clusters.  Luckily, I had already downloaded these before I came to the coffee shop since otherwise there's no way that would <code>docker pull</code> in less than an hour and I'd have to give up until I went home.</p>
+<!-- The next part has me downloading an LLM, which I _don't_ have locally.  I'll have to download this when I get home.  In the meantime, let me look at what the example app in this repo does. -->
+
+<h2 id="the-example-app">The Example App</h2>
+<p>Looking at in the app folder we have an <code>api</code>, <code>data</code>, and <code>frontend</code> folder, and I'll look at those in a minute.  Otherwise, we have some config files and a dockerfile that looks like it runs the flask application.  </p>
+<p>In the <code>frontend</code> folder we have some things I'm half-familiar with.  I'm familiar with typescript and the Vue framework, but I'm not as familiar with React. Given my limited knowledge, I scanned through the code and found it was mostly things to make the search app look and feel nice.  It's possible we could get the same information with API calls, which tells me that I don't need to spend too much time investigating every piece of this frontend.  I'll move on.</p>
+<p>The <code>data</code> folder is, surprise, data.  There is also a python script.  The <code>main()</code> function of this looks like this:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">install_elser</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading data from $</span><span class="si">{</span><span class="n">FILE</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">metadata_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;summary&quot;</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;updated_at&quot;</span><span class="p">]</span>
+<span class="n">workplace_docs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">FILE</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()):</span>
+        <span class="n">workplace_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Document</span><span class="p">(</span>
+                <span class="n">page_content</span><span class="o">=</span><span class="n">doc</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">],</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">metadata_keys</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">workplace_docs</span><span class="p">)</span><span class="si">}</span><span class="s2"> documents&quot;</span><span class="p">)</span>
+
+<span class="n">text_splitter</span> <span class="o">=</span> <span class="n">RecursiveCharacterTextSplitter</span><span class="o">.</span><span class="n">from_tiktoken_encoder</span><span class="p">(</span>
+    <span class="n">chunk_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">chunk_overlap</span><span class="o">=</span><span class="mi">256</span>
+<span class="p">)</span>
+
+<span class="n">docs</span> <span class="o">=</span> <span class="n">text_splitter</span><span class="o">.</span><span class="n">transform_documents</span><span class="p">(</span><span class="n">workplace_docs</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Split </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">workplace_docs</span><span class="p">)</span><span class="si">}</span><span class="s2"> documents into </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span><span class="si">}</span><span class="s2"> chunks&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Creating Elasticsearch sparse vector store in Elastic Cloud: </span><span class="si">{</span><span class="n">ELASTIC_CLOUD_ID</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+
+<span class="n">elasticsearch_client</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">INDEX</span><span class="p">,</span> <span class="n">ignore_unavailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">ElasticsearchStore</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span>
+    <span class="n">docs</span><span class="p">,</span>
+    <span class="n">es_connection</span><span class="o">=</span><span class="n">elasticsearch_client</span><span class="p">,</span>
+    <span class="n">index_name</span><span class="o">=</span><span class="n">INDEX</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">ElasticsearchStore</span><span class="o">.</span><span class="n">SparseVectorRetrievalStrategy</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="n">ELSER_MODEL</span><span class="p">),</span>
+    <span class="n">bulk_kwargs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;request_timeout&quot;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+
+<p>From the top we see that it tries to install ELSER (which I encountered a few posts ago!), defines some metadata keys, opens up some of the data files and appends the contents there.  The <code>Document</code> is from langchain: <code>langchain.docstore.document</code> and I'm not sure right now what it does, but it seems like a class to hold the contents of a document.</p>
+<p>Parenthetically, I've never seen <code>"rt"</code> as an option in <code>open</code>, but it turns out that it refers to opening a file in "text" mode, which is the default, so it's the same as <code>"r"</code>.</p>
+<p>Next, I see <code>from_tiktoken_encoder</code> and I'm like, "Wait, TikTok what now?"  From the <a href="https://python.langchain.com/docs/modules/data_connection/document_transformers/split_by_token">langchain documentation on tiktoken</a>:</p>
+<blockquote>
+<p>Language models have a token limit. You should not exceed the token limit. When you split your text into chunks it is therefore a good idea to count the number of tokens. There are many tokenizers. When you count tokens in your text you should use the same tokenizer as used in the language model.</p>
+<p>tiktoken is a fast BPE tokenizer created by OpenAI.</p>
+<p>We can use it to estimate tokens used. It will probably be more accurate for the OpenAI models.</p>
+</blockquote>
+<p>Okay, so it's not going to tiktok, that's good to know.  I'm chunking up documents and, indeed, the next print statement says exactly that.</p>
+<p>The ES Sparse Vector storage is then created, and I will have to fiddle with that so we can have something local to store them if possible.  Next, the code creates an index from our documents.</p>
+<p>In the <code>api</code> folder I see a few important files.  <code>llm_integrations.py</code> connects to openai, or the various other chat AI providers (vertex, azure, etc.), and all of the inits look reasonable and approximately the same.  The <code>elasticsearch_client.py</code> is appropriately named: it passes our ES client into <code>ElasticsearchChatMessageHistory</code> which, according to the <a href="https://python.langchain.com/docs/integrations/memory/elasticsearch_chat_message_history#initialize-elasticsearch-client-and-chat-message-history">langchain docs</a> is the way langchain is able to read chat history with ES.  </p>
+<p>Two files left: <code>chat.py</code> and <code>app.py</code>.  The <code>chat.py</code> file, which I'll probably look at a bit harder later because it seems like it's doing some heavy lifting to convert the question from the user into something usable, but the tl;dr of the file is, "Takes questions, splits out answers."  </p>
+<p>The <code>api.py</code> file has two endpoints: <code>/</code> which sends us to the index page, and <code>/app/chat/</code> which takes the question and returns the response that <code>elasticsearch_client.py</code> needs.  There's also a cli command to create or recreate the ES index.</p>
+<p>That's all of the sample app stuff.  As I parse through what is happening I'll most likely need to revisit some of these files later, but it's nice to know they exist and it's nice to know where things are.</p>
+<h2 id="python-back-end">Python Back End</h2>
+<p>Running <code>flask create-index</code> gives me an error.</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>elastic_transport.TlsError:<span class="w"> </span>TLS<span class="w"> </span>error<span class="w"> </span>caused<span class="w"> </span>by:<span class="w"> </span>TlsError<span class="o">(</span>TLS<span class="w"> </span>error<span class="w"> </span>caused<span class="w"> </span>by:<span class="w"> </span>SSLError<span class="o">([</span>SSL:<span class="w"> </span>CERTIFICATE_VERIFY_FAILED<span class="o">]</span><span class="w"> </span>certificate<span class="w"> </span>verify<span class="w"> </span>failed<span class="w"> </span><span class="o">(</span>_ssl.c:1007<span class="o">)))</span>
+</code></pre></div></td></tr></table></div>
+
+<p>I've learned from doing this a few times that there's something afoot in the ES client in the Python code and, not wanting to <em>solve</em> this problem so much as <em>avoid dealing with it</em>, I added the following to the <strong>/data/index_data.py</strong> file:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">if</span> <span class="n">ELASTICSEARCH_URL</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ELASTICSEARCH_URL</span><span class="p">)</span>
+    <span class="n">elasticsearch_client</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span>
+        <span class="n">hosts</span><span class="o">=</span><span class="p">[</span><span class="n">ELASTICSEARCH_URL</span><span class="p">],</span> <span class="n">basic_auth</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;elastic&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">),</span> <span class="n">verify_certs</span><span class="o">=</span><span class="kc">False</span>  <span class="c1"># Added this!</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+
+<p>This'll definitely work, right?  Let's see!</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>raise<span class="w"> </span>HTTP_EXCEPTIONS.get<span class="o">(</span>meta.status,<span class="w"> </span>ApiError<span class="o">)(</span>
+elasticsearch.NotFoundError:<span class="w"> </span>NotFoundError<span class="o">(</span><span class="m">404</span>,<span class="w"> </span><span class="s1">&#39;resource_not_found_exception&#39;</span>,<span class="w"> </span><span class="s1">&#39;No known trained model with model_id [.elser_model_2]&#39;</span><span class="o">)</span>
+</code></pre></div></td></tr></table></div>
+
+<p>At <em>least</em> I know where this is!  It's in the same file, in the <code>install_elser()</code> function.  I look a bit further down and see...</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>raise<span class="w"> </span>HTTP_EXCEPTIONS.get<span class="o">(</span>meta.status,<span class="w"> </span>ApiError<span class="o">)(</span>
+elasticsearch.BadRequestError:<span class="w"> </span>BadRequestError<span class="o">(</span><span class="m">400</span>,<span class="w"> </span><span class="s1">&#39;action_request_validation_exception&#39;</span>,<span class="w"> </span><span class="s2">&quot;Validation Failed: 1: [model_type] must be set if [definition] is not defined.;2: [inference_config] must not be null.;3: Invalid model_id; &#39;.elser_model_2&#39; can contain lowercase alphanumeric (a-z and 0-9), hyphens or underscores; must start and end with alphanumeric;&quot;</span><span class="o">)</span>
+</code></pre></div></td></tr></table></div>
+
+<p>Oh, well, sure.  That makes sense.  While looking this up, I see that I need a certain <strong>subscription type</strong> to use ELSER, which makes me a little nervous.  It does not explicitly say this in the requirements but I've been burned before.</p>
+<p>I run into a snag here.  I can't figure out what model id I should be using, and doing a <code>get</code> for the model ids only gives me a single id for an unrelated model.  I'm worried that I <em>do</em> need a subscription.</p>
+<p>TODO: I gott'a figure this out!</p>
+<!-- 
+## Next Time
+
+The next thing that the tutorial recommends doing is a [Chatbot Tutorial](https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/welcome).  Since this tutorial goes over the [Langchain](https://www.langchain.com/) project and works with some concepts I'm not familiar with, I think it might be fun to try out.
+
+See you there! -->
+    </div>
+</body>
+
+</html>

@@ -40,3 +40,11 @@ figure {
     margin-bottom: 1.75rem;
     box-shadow: 1px 1px 10px 1px rgba(0, 0, 0, .1);
 }
+
+.codehilite>pre {
+    margin: 0;
+}
+
+td.linenos {
+    padding-right: 0.25rem;
+}
