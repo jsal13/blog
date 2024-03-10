@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Using Sklean Pipelines for Fun and Profit</title>
+
+    <!-- CUSTOM CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pygmentize.css">
+
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+</head>
+
+<body>
+
+    
+
+    <div id="post-content">
+        <h1 id="using-sklean-pipelines-for-fun-and-profit">Using Sklean Pipelines for Fun and Profit</h1>
+<!-- ID: 202306060010 -->
+<p>Last Updated: <em>2023-06-06</em></p>
+<hr />
+<h2 id="introduction">Introduction</h2>
+<p>Sklearn's <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html">pipelines</a> are an elegant way to organize modeling workflows.  It also provides an "at-a-glance" picture of what is going into the current model &mdash; something your future self will thank you for when you read that notebook back in six months and have no idea what anything is doing.</p>
+<h2 id="getting-toy-data-to-play-with">Getting Toy Data To Play With</h2>
+<p>I'll be working with the cute <a href="https://github.com/allisonhorst/palmerpenguins">Penguins</a> dataset which <strong>seaborn</strong> can load.  The "goal" of my classifier: try to predict the sex of the penguin, given the rest of the features.  <strong>This model will purposely be simplistic: it will serve only to help explain how to set up pipelines.</strong></p>
+<h2 id="loading-the-data">Loading the Data</h2>
+<p>I made a CSV of the data and a script to load it.  <strong>In this post, I've opted to use <a href="https://pola.rs/">Polars</a> over <a href="https://pandas.pydata.org/docs/index.html">Pandas</a>.</strong>  </p>
+<div class="admonition note">
+<p class="admonition-title">Pandas?</p>
+<p>If you prefer <a href="https://pandas.pydata.org/docs/index.html">Pandas</a> there should only be changes required for this next code block, but all the code after this code block should work without changes.</p>
+</div>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">polars</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;./datasets/penguins.csv&quot;</span><span class="p">,</span> <span class="n">null_values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;NA&quot;</span><span class="p">],</span> <span class="n">dtypes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">})</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_nulls</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sex&quot;</span><span class="p">])</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;sex&quot;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">((</span><span class="n">pl</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;sex&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;male&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+
+<span class="c1"># A weird quirk for sklearn.</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+<span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.33</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1234</span>
+<span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+
+<p>The file contains null values of the form "NA" so I set <code>null_values=["NA"]</code> to make Polars understand that those are nulls.  Additionally, Polars will think that a year is an <code>int</code> but I want it as a categorical so we set the dtype to be <code>str</code>.  Since I'm predicting on <strong>sex</strong>, I'm going to drop any rows that have a null in that column since they won't give me any new predictive information.</p>
+<p>I define <code>x</code> and <code>y</code> in the next few lines.  The <code>df.select(...)</code> part is a bit strange if you haven't seen it before, so let me go through it:</p>
+<ol>
+<li><code>pl.col("sex")</code> picks out the <strong>sex</strong> column,</li>
+<li><code>pl.col("sex") == "male"</code> compares the column to the string <code>"male"</code>, resulting in a column which is either <code>True</code> or <code>False</code>,</li>
+<li><code>.alias("target")</code> gives the name <strong>target</strong> to this new boolean column,</li>
+<li><code>.cast(int)</code> casts the new <strong>target</strong> column as an <code>int</code> column (<code>True</code> goes to <code>1</code>, <code>False</code> goes to <code>0</code>),</li>
+<li><code>df.select(...)</code> wraps around the whole thing to say, "I'm working with <code>df</code>, and we're going to do something with the columns of this dataframe.`  See <a href="https://docs.pola.rs/py-polars/html/reference/dataframe/api/polars.DataFrame.select.html">the docs</a> for a bit more detail on this and some examples.</li>
+</ol>
+<p>This might seem a bit more complicated compared to the Pandas version, which goes something like <code>(df["sex"] == "male").astype(int)</code> but as the number or complexity of derived columns increases I find that Polars is much more readable.</p>
+<p>Either way, looking at the next part, what the heck is this?</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+
+<p>I do this because during the fitting process later, sklearn will require my target values to be a 1D array.  Currently, it is a Polars Series, which, when I make it into a <em>numpy</em> array will become a <code>(num_rows, 1)</code> ndarray.  Sklearn requires this be <code>(num_rows,)</code> &mdash; that is, a flat array &mdash; which I can get using <code>.ravel()</code>.  It's weird but it makes sense if you look at the underlying arrays (pre- and post-ravel). </p>
+<p>Last, I do a train-test split.</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.33</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1234</span>
+<span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+
+<p>Nothing wild here.  This gives me two different sets of feature and target sets: one to use for training, one to use for testing.</p>
+<h2 id="pipelines">Pipelines</h2>
+<p>A <code>Pipeline</code> takes a list of 2-tuples <code>(name, transform)</code> where a <code>transform</code> in Sklean is anything which has implemented the <code>fit</code>/<code>transform</code> methods (see <a href="https://scikit-learn.org/stable/data_transforms.html">the docs</a> for more on this).  The pattern I'll use is roughly like this:</p>
+<div class="admonition warning">
+<p class="admonition-title">This is Pseudocode.</p>
+</div>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># List of columns to transform in this pipeline.</span>
+<span class="n">some_column_list</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+
+<span class="c1"># List of transformations, in order, to apply.</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;name_of_transformer_1&quot;</span><span class="p">,</span> <span class="n">Transformer1</span><span class="p">()),</span>
+        <span class="p">(</span><span class="s2">&quot;name_of_transformer_2&quot;</span><span class="p">,</span> <span class="n">Transformer2</span><span class="p">()),</span>
+
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Make the transformer, which will apply ALL transformations.</span>
+<span class="c1"># In this case, there is only the one above.</span>
+<span class="n">col_transformer</span> <span class="o">=</span> <span class="n">ColumnTransformer</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;col_pipeline&quot;</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">,</span> <span class="n">some_column_list</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit the transformer with training data.</span>
+<span class="n">col_transformer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+
+<p>This is the gist of how pipelines work: pick columns to apply the transforms to, make a pipeline to list the transformers to apply, and then apply all the pipelines using the (I think) awkwardly named <code>ColumnTransformer</code>.  It's going to look like a lot, but all I'm doing is filling out the above with a few standard transformers.  Right now, you don't need to know what these transformers even <em>do</em>, so long as you know they <em>do something</em>.</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn.impute</span> <span class="kn">import</span> <span class="n">SimpleImputer</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
+
+<span class="c1"># Make pipelines for specific columns.</span>
+<span class="n">cols_numeric</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;bill_length_mm&quot;</span><span class="p">,</span> <span class="s2">&quot;bill_depth_mm&quot;</span><span class="p">,</span> <span class="s2">&quot;flipper_length_mm&quot;</span><span class="p">,</span> <span class="s2">&quot;body_mass_g&quot;</span><span class="p">]</span>
+<span class="n">pipeline_numeric</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;impute_w_mean&quot;</span><span class="p">,</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;scale_normal&quot;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">cols_categorical</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;species&quot;</span><span class="p">,</span> <span class="s2">&quot;island&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">]</span>
+<span class="n">pipeline_categorical</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;impute_w_most_frequent&quot;</span><span class="p">,</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;most_frequent&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;one_hot_encode&quot;</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">handle_unknown</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">sparse_output</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Put it all together into a transformer.</span>
+<span class="n">preprocessing_transformer</span> <span class="o">=</span> <span class="n">ColumnTransformer</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;numeric&quot;</span><span class="p">,</span> <span class="n">pipeline_numeric</span><span class="p">,</span> <span class="n">cols_numeric</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;categorical&quot;</span><span class="p">,</span> <span class="n">pipeline_categorical</span><span class="p">,</span> <span class="n">cols_categorical</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit the transformer with training data.</span>
+<span class="n">preprocessing_transformer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># ---</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">preprocessing_transformer</span><span class="o">.</span><span class="n">get_feature_names_out</span><span class="p">(),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">preprocessing_transformer</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+
+<p>At the end, I printed the values:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code>[&#39;numeric__bill_length_mm&#39; &#39;numeric__bill_depth_mm&#39;
+ &#39;numeric__flipper_length_mm&#39; &#39;numeric__body_mass_g&#39;
+ &#39;categorical__species_Adelie&#39; &#39;categorical__species_Chinstrap&#39;
+ &#39;categorical__species_Gentoo&#39; &#39;categorical__island_Biscoe&#39;
+ &#39;categorical__island_Dream&#39; &#39;categorical__island_Torgersen&#39;
+ &#39;categorical__year_2007&#39; &#39;categorical__year_2008&#39;
+ &#39;categorical__year_2009&#39;]
+
+[[-1.00173392  0.34890155 -1.47813963 ...  1.          0.
+   0.        ]
+ [ 0.00368887  0.08989674  1.22603896 ...  0.          1.
+   0.        ]
+ [-0.4716019   1.17771697 -0.26837552 ...  0.          1.
+   0.        ]
+ ...
+ [ 1.53924369  1.48852275  0.22976264 ...  0.          1.
+   0.        ]
+ [ 0.93599001 -0.47991386  1.9376649  ...  0.          1.
+   0.        ]
+ [ 0.46069923 -0.27271    -0.69535109 ...  0.          1.
+   0.        ]]
+</code></pre></div></td></tr></table></div>
+
+<p>Great.  The <code>.fit_transform(...)</code> has given me the latter array which is ready to be popped into a model.  I'll do just that with a <code>RandomForestClassifier</code>, though any classifier would work for my purposes in this post.</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+
+<span class="c1"># Make a RF Classifier and pipeline it with the preprocessor.</span>
+<span class="n">rf_clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">()</span>
+
+<span class="n">preprocess_model_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span>
+    <span class="p">[(</span><span class="s2">&quot;preprocessing&quot;</span><span class="p">,</span> <span class="n">preprocessing_transformer</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;classifier&quot;</span><span class="p">,</span> <span class="n">rf_clf</span><span class="p">)]</span>
+<span class="p">)</span>
+
+<span class="n">preprocess_model_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">y_predicted</span> <span class="o">=</span> <span class="n">preprocess_model_pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+
+<p>I've created another pipeline which includes the preprocessing (the thing I defined above) and our new classifier.  The raw data is processed first by the <code>preprocessing_transformer</code>, then spit out into the <code>rf_clf</code> RF Classifier.  One cool thing is that I don't need to keep <code>.fit</code>-ing everything, I can call <code>.fit(...)</code> on the pipeline and it'll push the data through!  Similarly, I can call <code>.predict(...)</code> on the pipeline and it will do what I expect: give me an array of predictions for my test values.</p>
+<h2 id="scoring-the-model">Scoring the Model</h2>
+<p>How did the model do?</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">,</span> <span class="n">precision_score</span><span class="p">,</span> <span class="n">recall_score</span>
+
+<span class="n">scores</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_predicted</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;precision&quot;</span><span class="p">,</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_predicted</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;recall&quot;</span><span class="p">,</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_predicted</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;f1&quot;</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_predicted</span><span class="p">)),</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">scores</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">score</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">score</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">4</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>accuracy : 0.9
+precision : 0.8627
+recall : 0.9167
+f1 : 0.8889
+</code></pre></div></td></tr></table></div>
+
+<p>Not <em>terrible</em> for some standard transformers and random forest classification!</p>
+<h2 id="adding-to-pipelines">Adding to Pipelines</h2>
+<p>Besides keeping everything together, pipelines allow the modeler to see what's happening to the data at what stage and easily add new transformers to the flow.  For example, what if I wanted to use some other strategy with our <code>SimpleImputer</code>?  What if I wanted to add a second <code>Scaler</code> for some reason?  What if I wanted to add a <a href="https://scikit-learn.org/stable/modules/preprocessing.html#custom-transformers">custom transformer</a>?</p>
+<p>This becomes a matter of adding something onto a list.  If you've seen notebooks where transforms are peppered across multiple random cells in a Jupyter notebook (or, worse, in multiple Jupyter Notebooks!), then it's easy to appreciate how nice and clean this makes things.</p>
+<p><em>Tidy is good.  Be tidy.</em></p>
+    </div>
+</body>
+
+</html>

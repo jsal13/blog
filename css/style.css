@@ -1,5 +1,5 @@
 #post-content {
-    max-width: 600px;
+    max-width: min(100vw, 800px);
     margin-left: 1rem;
 }
 
@@ -45,59 +45,51 @@ figure {
     margin: 0;
 }
 
-td.linenos {
-    padding-right: 0.25rem;
-}
 
 /* ADMONITION */
-.admonition {
-    margin-bottom: 1rem;
-    border: 1px solid transparent;
-    border-radius: 4px;
+/* Color REF: https://squidfunk.github.io/mkdocs-material/reference/admonitions/ */
+.admonition-title {
+    font-weight: bold;
+    font-size: 1rem;
+    margin: 0 !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
 }
 
 .admonition>p {
-    margin-left: 1rem;
-    margin-right: 1rem;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
 }
 
 .admonition.note {
-    color: #3a87ad;
-    background-color: #d9edf7;
-    border-color: #bce8f1;
+    border: 0.075rem solid #448aff;
+    border-radius: 0.2rem;
+    margin-bottom: 1rem;
+    background-color: #4489ff11;
 }
 
-.admonition.note>p:first-child::before {
-    content: '\26A0';
-    padding-right: 4px;
-    font-weight: normal;
+.admonition.note>.admonition-title {
+    background-color: #448aff1a;
 }
 
 .admonition.warning {
-    color: #c09853;
-    background-color: #fcf8e3;
-    border-color: #fbeed5;
+    border: 0.075rem solid #ff9100;
+    border-radius: 0.2rem;
+    margin-bottom: 1rem;
+    background-color: #ff910011;
 }
 
-.admonition.warning>p:first-child::before {
-    content: '\26A0';
-    font-weight: normal;
+.admonition.warning>.admonition-title {
+    background-color: #ff91001a;
 }
 
 .admonition.danger {
-    color: #b94a48;
-    background-color: #f2dede;
-    border-color: #eed3d7;
+    border: 0.075rem solid #ff1744;
+    border-radius: 0.2rem;
+    margin-bottom: 1rem;
+    background-color: #ff174411;
 }
 
-.admonition.danger>p:first-child::before {
-    content: '\26A1';
-    font-weight: normal;
-}
-
-.admonition-title {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin: 0 !important;
-    padding: 0 !important;
+.admonition.danger>.admonition-title {
+    background-color: #ff17441a;
 }
