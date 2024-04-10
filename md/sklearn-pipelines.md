@@ -73,7 +73,7 @@ Nothing wild here.  This gives me two different sets of feature and target sets:
 
 A `Pipeline` takes a list of 2-tuples `(name, transform)` where a `transform` in Sklean is anything which has implemented the `fit`/`transform` methods (see [the docs](https://scikit-learn.org/stable/data_transforms.html) for more on this).  The pattern I'll use is roughly like this:
 
-!!! warning "This is Pseudocode."
+!!! warning "This is Pseudo-code."
 
 ```python
 # List of columns to transform in this pipeline.

@@ -40,247 +40,136 @@
 
 <h2 id="the-elser-model">The ELSER Model</h2>
 <p>Remember <code>dense_vector</code>s?  They were the opposite of sparse vectors (lots of non-zero entries).  Typically the criticism lobbied against <code>dense_vectors</code> is that there's no great way to compress them so you wind up having to use a ton of space to represent them.  Sometimes, it's <em>Good Enough &trade;</em> to try and find the "important" or "most influential" dimensions in the vector and use those.  What's nice about this is that, instead of having a ton of elements to work with you'll only have a few.  Moreover, you can do some fairly easy compression on!  For example,</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<pre class="codehilite"><code class="language-python linenums">import numpy as np
 
-<span class="c1"># Make a dense vector where every entry is very small</span>
-<span class="c1"># except for a few spots where it&#39;s large.</span>
-<span class="c1"># This is hard to compress!  How would *you* do it and</span>
-<span class="c1"># still retain all the information?</span>
-<span class="n">dense_vector</span> <span class="o">=</span> <span class="mf">0.001</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">50000</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">]:</span>
-    <span class="n">dense_vector</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">2</span>
+# Make a dense vector where every entry is very small
+# except for a few spots where it's large.
+# This is hard to compress!  How would *you* do it and
+# still retain all the information?
+dense_vector = 0.001 * np.random.rand(50000)
+for idx in [5, 10, 15, 20, 25]:
+    dense_vector[idx] = idx + 2
 
-<span class="c1"># If, on the other hand, I don&#39;t care ab out the very small</span>
-<span class="c1"># values, and map them to 0...</span>
-<span class="n">sparse_vector</span> <span class="o">=</span> <span class="n">dense_vector</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">sparse_vector</span><span class="p">[</span><span class="n">sparse_vector</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+# If, on the other hand, I don't care ab out the very small
+# values, and map them to 0...
+sparse_vector = dense_vector.copy()
+sparse_vector[sparse_vector &lt; 0.01] = 0
 
-<span class="c1"># Every element in the sparse vector is 0 except the indexes above:</span>
+# Every element in the sparse vector is 0 except the indexes above:
 
-<span class="nb">print</span><span class="p">(</span><span class="n">sparse_vector</span><span class="p">[:</span><span class="mi">50</span><span class="p">])</span>
-<span class="c1"># array([</span>
-<span class="c1">#   0., 0., 0., 0., 0., 7., 0., 0., </span>
-<span class="c1">#   0., 0., 12., 0., 0., 0., 0., 17.,</span>
-<span class="c1">#   0., 0., 0., 0., 22., 0., 0., 0.,</span>
-<span class="c1">#   0., 27., 0., 0., 0., 0., 0., 0.,</span>
-<span class="c1">#   0., 0., 0., 0., 0., 0., 0., 0., </span>
-<span class="c1">#   0., 0., 0., 0., 0., 0., 0., 0., </span>
-<span class="c1">#   0., 0.</span>
-<span class="c1">#])</span>
+print(sparse_vector[:50])
+# array([
+#   0., 0., 0., 0., 0., 7., 0., 0., 
+#   0., 0., 12., 0., 0., 0., 0., 17.,
+#   0., 0., 0., 0., 22., 0., 0., 0.,
+#   0., 27., 0., 0., 0., 0., 0., 0.,
+#   0., 0., 0., 0., 0., 0., 0., 0., 
+#   0., 0., 0., 0., 0., 0., 0., 0., 
+#   0., 0.
+#])
 
-<span class="c1"># This can be represented in a more condensed form</span>
-<span class="c1"># with a simple mapping with `idx: value`!</span>
+# This can be represented in a more condensed form
+# with a simple mapping with `idx: value`!
 
-<span class="n">sparse_vector_condensed</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="mi">5</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> 
-    <span class="mi">10</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> 
-    <span class="mi">15</span><span class="p">:</span> <span class="mi">17</span>
-    <span class="mi">20</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span>
-    <span class="mi">25</span><span class="p">:</span> <span class="mi">27</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+sparse_vector_condensed = {
+    5: 7, 
+    10: 12, 
+    15: 17
+    20: 22,
+    25: 27
+}
+</code></pre>
 
-<p>This can be slimmed down some more, but the point is that a lot of space can be saved with this.  Moreover, it's a simple exercise to define things like dot products or even matrix operations for sparse matricies.  Neato.</p>
+<p>This can be slimmed down some more, but the point is that a lot of space can be saved with this.  Moreover, it's a simple exercise to define things like dot products or even matrix operations for sparse matrices.  Neato.</p>
 <p>Enough of me gushing about sparse vectors, let me get back to the tutorial at hand.</p>
 <p>In the same way I added dense vectors to the index, I can also add some sparse vectors ("<code>elser_embeddings</code>"):</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="c1"># ...</span>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    # ...
 
-    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">,</span> <span class="n">ignore_unavailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">,</span> <span class="n">mappings</span><span class="o">=</span><span class="p">{</span>
-            <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;embedding&#39;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;dense_vector&#39;</span><span class="p">,</span>
-                <span class="p">},</span>
-                <span class="s1">&#39;elser_embedding&#39;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;sparse_vector&#39;</span><span class="p">,</span>
-                <span class="p">},</span>
-            <span class="p">}</span>
-        <span class="p">})</span>
+    def create_index(self):
+        self.es.indices.delete(index='my_documents', ignore_unavailable=True)
+        self.es.indices.create(index='my_documents', mappings={
+            'properties': {
+                'embedding': {
+                    'type': 'dense_vector',
+                },
+                'elser_embedding': {
+                    'type': 'sparse_vector',
+                },
+            }
+        })
 
-    <span class="c1"># ...</span>
-</code></pre></div></td></tr></table></div>
+    # ...
+</code></pre>
 
 <p>The ELSER model needs to be downloaded, similar to the way that I had to download that other embedding model.  As per the tutorial:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="c1"># ...</span>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    # ...
 
-    <span class="k">def</span> <span class="nf">deploy_elser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># download ELSER v2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">ml</span><span class="o">.</span><span class="n">put_trained_model</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s1">&#39;.elser_model_2&#39;</span><span class="p">,</span>
-                                     <span class="nb">input</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;field_names&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;text_field&#39;</span><span class="p">]})</span>
+    def deploy_elser(self):
+        # download ELSER v2
+        self.es.ml.put_trained_model(model_id='.elser_model_2',
+                                     input={'field_names': ['text_field']})
 
-        <span class="c1"># wait until ready</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">ml</span><span class="o">.</span><span class="n">get_trained_models</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s1">&#39;.elser_model_2&#39;</span><span class="p">,</span>
-                                                   <span class="n">include</span><span class="o">=</span><span class="s1">&#39;definition_status&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">status</span><span class="p">[</span><span class="s1">&#39;trained_model_configs&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;fully_defined&#39;</span><span class="p">]:</span>
-                <span class="c1"># model is ready</span>
-                <span class="k">break</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        # wait until ready
+        while True:
+            status = self.es.ml.get_trained_models(model_id='.elser_model_2',
+                                                   include='definition_status')
+            if status['trained_model_configs'][0]['fully_defined']:
+                # model is ready
+                break
+            time.sleep(1)
 
-        <span class="c1"># deploy the model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">ml</span><span class="o">.</span><span class="n">start_trained_model_deployment</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s1">&#39;.elser_model_2&#39;</span><span class="p">)</span>
+        # deploy the model
+        self.es.ml.start_trained_model_deployment(model_id='.elser_model_2')
 
-        <span class="c1"># define a pipeline</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">ingest</span><span class="o">.</span><span class="n">put_pipeline</span><span class="p">(</span>
-            <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;elser-ingest-pipeline&#39;</span><span class="p">,</span>
-            <span class="n">processors</span><span class="o">=</span><span class="p">[</span>
-                <span class="p">{</span>
-                    <span class="s1">&#39;inference&#39;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s1">&#39;model_id&#39;</span><span class="p">:</span> <span class="s1">&#39;.elser_model_2&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;input_output&#39;</span><span class="p">:</span> <span class="p">[</span>
-                            <span class="p">{</span>
-                                <span class="s1">&#39;input_field&#39;</span><span class="p">:</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span>
-                                <span class="s1">&#39;output_field&#39;</span><span class="p">:</span> <span class="s1">&#39;elser_embedding&#39;</span><span class="p">,</span>
-                            <span class="p">}</span>
-                        <span class="p">]</span>
-                    <span class="p">}</span>
-                <span class="p">}</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+        # define a pipeline
+        self.es.ingest.put_pipeline(
+            id='elser-ingest-pipeline',
+            processors=[
+                {
+                    'inference': {
+                        'model_id': '.elser_model_2',
+                        'input_output': [
+                            {
+                                'input_field': 'summary',
+                                'output_field': 'elser_embedding',
+                            }
+                        ]
+                    }
+                }
+            ]
+        )
+</code></pre>
 
 <p>So far, things seem quite similar to the other embedding which is most likely on purpose.  I appreciate it, makes it easier to pick up, learn, and remember!</p>
 <p>The <code>.put_trained_model()</code> method downloads ELSER.  The <code>.start_trained_model_deployment()</code> method, guess what, will begin the deployment of the model.</p>
 <p>The last thing the tutorial does here is to "define a pipeline" for it to tell ES how to use the model.  This is the <code>.put_pipeline()</code> method.  This probably becomes much more complex as the pipelining in and out of the model become full of weird business logic stuff, but for now it's nice and simple: summary in, model output out.  But <em>what is the model output?</em>  I guess I'll see soon.</p>
 <p>The index needs to know about the pipeline and the way to add the pipeline to the index is straight-forward:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="c1"># ...</span>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    # ...
 
-    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">,</span> <span class="n">ignore_unavailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-            <span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">,</span>
-            <span class="n">mappings</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s1">&#39;embedding&#39;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;dense_vector&#39;</span><span class="p">,</span>
-                    <span class="p">},</span>
-                    <span class="s1">&#39;elser_embedding&#39;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;sparse_vector&#39;</span><span class="p">,</span>
-                    <span class="p">},</span>
-                <span class="p">}</span>
-            <span class="p">},</span>
-            <span class="n">settings</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s1">&#39;default_pipeline&#39;</span><span class="p">:</span> <span class="s1">&#39;elser-ingest-pipeline&#39;</span>
-                <span class="p">}</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+    def create_index(self):
+        self.es.indices.delete(index='my_documents', ignore_unavailable=True)
+        self.es.indices.create(
+            index='my_documents',
+            mappings={
+                'properties': {
+                    'embedding': {
+                        'type': 'dense_vector',
+                    },
+                    'elser_embedding': {
+                        'type': 'sparse_vector',
+                    },
+                }
+            },
+            settings={
+                'index': {
+                    'default_pipeline': 'elser-ingest-pipeline'
+                }
+            }
+        )
+</code></pre>
 
 <p><em>Why</em> does the index need to know about the pipeline?  At this point, I realized my understanding of what the index <em>is</em> might not be the best, so I <a href="https://www.elastic.co/blog/what-is-an-elasticsearch-index">looked it up</a>.  Some relevant parts of this linked blog entry:</p>
 <blockquote>

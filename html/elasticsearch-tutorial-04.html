@@ -46,119 +46,68 @@
 from David D. Lewis' professional home page, currently: <a href="http://www.research.att.com/~lewis">http://www.research.att.com/~lewis</a></p>
 </blockquote>
 <p>Next, the README describes, in a lengthy bunch of sections, what "SGML" is and how to parse the <code>sgm</code> files.  There's a lot here but it sort of looks like XML so I'm just going to open one of the files and see what happens.  Here's what each of the sections looks like (body abbreviated with [...] by me):</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">&lt;REUTERS</span><span class="w"> </span><span class="na">TOPICS=</span><span class="s">&quot;YES&quot;</span><span class="w"> </span><span class="na">LEWISSPLIT=</span><span class="s">&quot;TRAIN&quot;</span><span class="w"> </span>
-<span class="w">    </span><span class="na">CGISPLIT=</span><span class="s">&quot;TRAINING-SET&quot;</span><span class="w"> </span><span class="na">OLDID=</span><span class="s">&quot;5544&quot;</span><span class="w"> </span><span class="na">NEWID=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
-<span class="nt">&lt;DATE&gt;</span>26-FEB-1987<span class="w"> </span>15:01:01.79<span class="nt">&lt;/DATE&gt;</span>
-<span class="nt">&lt;TOPICS&gt;&lt;D&gt;</span>cocoa<span class="nt">&lt;/D&gt;&lt;/TOPICS&gt;</span>
-<span class="nt">&lt;PLACES&gt;&lt;D&gt;</span>el-salvador<span class="nt">&lt;/D&gt;&lt;D&gt;</span>usa<span class="nt">&lt;/D&gt;&lt;D&gt;</span>uruguay<span class="nt">&lt;/D&gt;&lt;/PLACES&gt;</span>
-<span class="nt">&lt;PEOPLE&gt;&lt;/PEOPLE&gt;</span>
-<span class="nt">&lt;ORGS&gt;&lt;/ORGS&gt;</span>
-<span class="nt">&lt;EXCHANGES&gt;&lt;/EXCHANGES&gt;</span>
-<span class="nt">&lt;COMPANIES&gt;&lt;/COMPANIES&gt;</span>
-<span class="nt">&lt;UNKNOWN&gt;</span><span class="w"> </span>
-<span class="ni">&amp;#5;&amp;#5;&amp;#5;</span>C<span class="w"> </span>T
-<span class="ni">&amp;#22;&amp;#22;&amp;#1;</span>f0704<span class="ni">&amp;#31;</span>reute
-u<span class="w"> </span>f<span class="w"> </span>BC-BAHIA-COCOA-REVIEW<span class="w">   </span>02-26<span class="w"> </span>0105<span class="nt">&lt;/UNKNOWN&gt;</span>
-<span class="nt">&lt;TEXT&gt;</span><span class="ni">&amp;#2;</span>
-<span class="nt">&lt;TITLE&gt;</span>BAHIA<span class="w"> </span>COCOA<span class="w"> </span>REVIEW<span class="nt">&lt;/TITLE&gt;</span>
-<span class="nt">&lt;DATELINE&gt;</span><span class="w">    </span>SALVADOR,<span class="w"> </span>Feb<span class="w"> </span>26<span class="w"> </span>-<span class="w"> </span><span class="nt">&lt;/DATELINE&gt;</span>
-<span class="nt">&lt;BODY&gt;</span>Showers<span class="w"> </span>continued<span class="w"> </span>throughout<span class="w"> </span>the<span class="w"> </span>week<span class="w"> </span>in<span class="w"> </span>the<span class="w"> </span>Bahia<span class="w"> </span>cocoa<span class="w"> </span>zone,<span class="w"> </span>[...]<span class="w"> </span>
-Final<span class="w"> </span>figures<span class="w"> </span>for<span class="w"> </span>the<span class="w"> </span>period<span class="w"> </span>to<span class="w"> </span>February<span class="w"> </span>28<span class="w"> </span>are<span class="w"> </span>expected<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>published<span class="w"> </span>
-by<span class="w"> </span>the<span class="w"> </span>Brazilian<span class="w"> </span>Cocoa<span class="w"> </span>Trade<span class="w"> </span>Commission<span class="w"> </span>after<span class="w"> </span>carnival<span class="w"> </span>which<span class="w"> </span>ends<span class="w"> </span>midday<span class="w"> </span>
-on<span class="w"> </span>February<span class="w"> </span>27.
-<span class="w"> </span>Reuter
-<span class="ni">&amp;#3;</span><span class="nt">&lt;/BODY&gt;&lt;/TEXT&gt;</span>
-<span class="nt">&lt;/REUTERS&gt;</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-xml linenums">&lt;REUTERS TOPICS=&quot;YES&quot; LEWISSPLIT=&quot;TRAIN&quot; 
+    CGISPLIT=&quot;TRAINING-SET&quot; OLDID=&quot;5544&quot; NEWID=&quot;1&quot;&gt;
+&lt;DATE&gt;26-FEB-1987 15:01:01.79&lt;/DATE&gt;
+&lt;TOPICS&gt;&lt;D&gt;cocoa&lt;/D&gt;&lt;/TOPICS&gt;
+&lt;PLACES&gt;&lt;D&gt;el-salvador&lt;/D&gt;&lt;D&gt;usa&lt;/D&gt;&lt;D&gt;uruguay&lt;/D&gt;&lt;/PLACES&gt;
+&lt;PEOPLE&gt;&lt;/PEOPLE&gt;
+&lt;ORGS&gt;&lt;/ORGS&gt;
+&lt;EXCHANGES&gt;&lt;/EXCHANGES&gt;
+&lt;COMPANIES&gt;&lt;/COMPANIES&gt;
+&lt;UNKNOWN&gt; 
+&amp;#5;&amp;#5;&amp;#5;C T
+&amp;#22;&amp;#22;&amp;#1;f0704&amp;#31;reute
+u f BC-BAHIA-COCOA-REVIEW   02-26 0105&lt;/UNKNOWN&gt;
+&lt;TEXT&gt;&amp;#2;
+&lt;TITLE&gt;BAHIA COCOA REVIEW&lt;/TITLE&gt;
+&lt;DATELINE&gt;    SALVADOR, Feb 26 - &lt;/DATELINE&gt;
+&lt;BODY&gt;Showers continued throughout the week in the Bahia cocoa zone, [...] 
+Final figures for the period to February 28 are expected to be published 
+by the Brazilian Cocoa Trade Commission after carnival which ends midday 
+on February 27.
+ Reuter
+&amp;#3;&lt;/BODY&gt;&lt;/TEXT&gt;
+&lt;/REUTERS&gt;
+</code></pre>
 
 <p>Looking at a few others gives us the same form.  Awesome!  I can pull out a few things here to make a slightly slimmer, more friendly-for-ES dataset.  We'll need the title and body of each of these.</p>
 <p>You might be thinking, "Oh, easy!  Just use <a href="https://stackoverflow.com/a/1732454">regular expressions on it</a>."  Alas, that would be a <em>grave error indeed</em>.  What I'll do is make a short <a href="https://beautiful-soup-4.readthedocs.io/en/latest/">Beautiful Soup</a> script in Python and scrape it that way.  </p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<pre class="codehilite"><code class="language-python linenums">import json
+from bs4 import BeautifulSoup
 
-<span class="c1"># Open the sgm files... for now, just pick one.</span>
-<span class="n">reut_sgm_id</span> <span class="o">=</span> <span class="s2">&quot;000&quot;</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reut2-</span><span class="si">{</span><span class="n">reut_sgm_id</span><span class="si">}</span><span class="s2">.sgm&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="s2">&quot;lxml&quot;</span><span class="p">)</span>
+# Open the sgm files... for now, just pick one.
+reut_sgm_id = &quot;000&quot;
+with open(f&quot;reut2-{reut_sgm_id}.sgm&quot;, &quot;r&quot;, encoding=&quot;utf-8&quot;) as f:
+    soup = BeautifulSoup(f.read(), &quot;lxml&quot;)
 
-<span class="c1"># Find all the &quot;reuters&quot; tags, which each article has as an outer tag.</span>
-<span class="n">soup_reuters_tags</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;reuters&quot;</span><span class="p">)</span>
+# Find all the &quot;reuters&quot; tags, which each article has as an outer tag.
+soup_reuters_tags = soup.find_all(&quot;reuters&quot;)
 
-<span class="c1"># For each article, get the title and the body.</span>
-<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">soup_reuter_tag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">soup_reuters_tags</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="n">soup_reuter_tag</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span>
-    <span class="n">title_txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span> <span class="k">else</span> <span class="n">title</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="n">soup_reuter_tag</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
-    <span class="n">doc_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title_txt</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">}</span>
+# For each article, get the title and the body.
+for idx, soup_reuter_tag in enumerate(soup_reuters_tags):
+    title = soup_reuter_tag.find(&quot;title&quot;)
+    title_txt = &quot;&quot; if not title else title.get_text(strip=True)
+    content = soup_reuter_tag.get_text(strip=True).replace(&quot;\n&quot;, &quot; &quot;)
+    doc_data = {&quot;title&quot;: title_txt, &quot;content&quot;: content}
 
-    <span class="c1"># Open a json file and pop in the title and body.</span>
-    <span class="c1"># Each article has its own file.</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;./scraped_documents/doc_</span><span class="si">{</span><span class="n">reut_sgm_id</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s2">0&gt;4</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">,</span> 
-        <span class="s2">&quot;w+&quot;</span><span class="p">,</span> 
-        <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span>
-    <span class="p">)</span> <span class="k">as</span> <span class="n">j</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">doc_data</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+    # Open a json file and pop in the title and body.
+    # Each article has its own file.
+    with open(
+        f&quot;./scraped_documents/doc_{reut_sgm_id}_{idx:0&gt;4}.json&quot;, 
+        &quot;w+&quot;, 
+        encoding=&quot;utf-8&quot;
+    ) as j:
+        json.dump(doc_data, j)
+</code></pre>
 
 <p>Not elegant, but gets the job done.  The files each look something like:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COBANCO INC &lt;CBCO&gt; YEAR NET&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;26-FEB-1987 15:18:59.34earnusaF f0772reute r f </span>
-<span class="s2">[...] or five cts per shr.  Reuter&quot;</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">{
+    &quot;title&quot;: &quot;COBANCO INC &lt;CBCO&gt; YEAR NET&quot;,
+    &quot;content&quot;: &quot;26-FEB-1987 15:18:59.34earnusaF f0772reute r f 
+[...] or five cts per shr.  Reuter&quot;
+}
+</code></pre>
 
 <figure>
     <img src="../assets/images/elasticsearch-tutorial-04_blah.png"
@@ -189,87 +138,50 @@ on<span class="w"> </span>February<span class="w"> </span>27.
 </figure>
 
 <p>Alas, they do not.  I get a "File Structure Cannot Be Determined" error.  Ugh.  I decide to make my own index ("New Index") and the ingestion type is via an API.  I choose Python for the language.  It tells me to generate an API key, and I do.  I had to update permissions for the API key to allow it to set <code>verify_certs=False</code> in my script below:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+<pre class="codehilite"><code class="language-python linenums">from elasticsearch import Elasticsearch
 
-<span class="c1"># Get API from the Kibana &quot;API Ingestion&quot; page.</span>
-<span class="n">API_KEY</span> <span class="o">=</span> <span class="s2">&quot;this_was_my_API_key&quot;</span>
-<span class="n">ES_ADDRESS</span> <span class="o">=</span> <span class="s2">&quot;https://localhost:9200&quot;</span>
+# Get API from the Kibana &quot;API Ingestion&quot; page.
+API_KEY = &quot;this_was_my_API_key&quot;
+ES_ADDRESS = &quot;https://localhost:9200&quot;
 
-<span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span><span class="n">hosts</span><span class="o">=</span><span class="n">ES_ADDRESS</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">API_KEY</span><span class="p">,</span> <span class="n">verify_certs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+es = Elasticsearch(hosts=ES_ADDRESS, api_key=API_KEY, verify_certs=False)
 
-<span class="nb">print</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">info</span><span class="p">())</span>
-</code></pre></div></td></tr></table></div>
+print(es.info())
+</code></pre>
 
 <p>I realized something at this point.  My old script was making files that I would have to re-read and import into this.  Why didn't I just copy-paste this into my previous script and do it all at once?  Why not, indeed.</p>
 <p>Here's the whole shebang:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
-<span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+<pre class="codehilite"><code class="language-python linenums">import json
+from bs4 import BeautifulSoup
+from elasticsearch import Elasticsearch
 
-<span class="c1"># Get API from the Kibana &quot;API Ingestion&quot; page.</span>
-<span class="n">API_KEY</span> <span class="o">=</span> <span class="s2">&quot;this_was_that_cool_API_key_I_had&quot;</span>
-<span class="n">ES_ADDRESS</span> <span class="o">=</span> <span class="s2">&quot;https://localhost:9200&quot;</span>
+# Get API from the Kibana &quot;API Ingestion&quot; page.
+API_KEY = &quot;this_was_that_cool_API_key_I_had&quot;
+ES_ADDRESS = &quot;https://localhost:9200&quot;
 
-<span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span><span class="n">hosts</span><span class="o">=</span><span class="n">ES_ADDRESS</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">API_KEY</span><span class="p">,</span> <span class="n">verify_certs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+es = Elasticsearch(hosts=ES_ADDRESS, api_key=API_KEY, verify_certs=False)
 
-<span class="c1"># Open the sgm files... for now, just pick one.</span>
-<span class="n">reut_sgm_id</span> <span class="o">=</span> <span class="s2">&quot;000&quot;</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reut2-</span><span class="si">{</span><span class="n">reut_sgm_id</span><span class="si">}</span><span class="s2">.sgm&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="s2">&quot;lxml&quot;</span><span class="p">)</span>
+# Open the sgm files... for now, just pick one.
+reut_sgm_id = &quot;000&quot;
+with open(f&quot;reut2-{reut_sgm_id}.sgm&quot;, &quot;r&quot;, encoding=&quot;utf-8&quot;) as f:
+    soup = BeautifulSoup(f.read(), &quot;lxml&quot;)
 
-<span class="c1"># Find all the &quot;reuters&quot; tags, which each article has as an outer tag.</span>
-<span class="n">soup_reuters_tags</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;reuters&quot;</span><span class="p">)</span>
+# Find all the &quot;reuters&quot; tags, which each article has as an outer tag.
+soup_reuters_tags = soup.find_all(&quot;reuters&quot;)
 
-<span class="c1"># For each article, get the title and the body.</span>
-<span class="c1"># We have to append the index before each article.</span>
-<span class="n">operations</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">soup_reuter_tag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">soup_reuters_tags</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="n">soup_reuter_tag</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span>
-    <span class="n">title_txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span> <span class="k">else</span> <span class="n">title</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="n">soup_reuter_tag</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+# For each article, get the title and the body.
+# We have to append the index before each article.
+operations = []
+for idx, soup_reuter_tag in enumerate(soup_reuters_tags):
+    title = soup_reuter_tag.find(&quot;title&quot;)
+    title_txt = &quot;&quot; if not title else title.get_text(strip=True)
+    content = soup_reuter_tag.get_text(strip=True).replace(&quot;\n&quot;, &quot; &quot;)
 
-    <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;_index&quot;</span><span class="p">:</span> <span class="s2">&quot;search-reuters&quot;</span><span class="p">}})</span>
-    <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title_txt</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">})</span>
+    operations.append({&quot;index&quot;: {&quot;_index&quot;: &quot;search-reuters&quot;}})
+    operations.append({&quot;title&quot;: title_txt, &quot;content&quot;: content})
 
-<span class="n">es</span><span class="o">.</span><span class="n">bulk</span><span class="p">(</span><span class="n">operations</span><span class="o">=</span><span class="n">operations</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+es.bulk(operations=operations)
+</code></pre>
 
 <p>As soon as this worked, I looked at the "Documents" section of the index and...</p>
 <figure>

@@ -38,100 +38,64 @@
 </blockquote>
 <p>Huh, neat.  Full-text keyword searches is what I generally think of when I see Elastisearch, and I know very little about dense vector embeddings right now &mdash; let alone how I'd generate, store, and search them!  I have zero familiarity with the ELSER model but I'm guessing that the "ELS" is for "Elastic Search".  The RRF algorithm sounds vaguely like the page-rank algorithm but I'll see when I get to it.</p>
 <h2 id="setting-things-up-for-the-tutorial">Setting Things up for the Tutorial</h2>
-<p>Since I'm using docker compose to run my local elastisearch toy, I need to increase our Docker memory limit in WSL to 4GB, as per <a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_configure_and_start_the_cluster">this note</a>.  The rest is easy: copy their <code>.env</code> and <code>docker-compose.yaml</code> file (on the same page as the note) and <code>docker compose up</code>.  After a few seconds I'm off to the races.</p>
+<p>Since I'm using docker compose to run my local Elastisearch toy, I need to increase our Docker memory limit in WSL to 4GB, as per <a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_configure_and_start_the_cluster">this note</a>.  The rest is easy: copy their <code>.env</code> and <code>docker-compose.yaml</code> file (on the same page as the note) and <code>docker compose up</code>.  After a few seconds I'm off to the races.</p>
 <h2 id="the-starter-application">The Starter Application</h2>
 <p>This tutorial has a pre-written <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/starter-project">Starter Application</a>, which means that I'm going to have to look through and investigate what this application does before I move on.  I might not wind up needing it.</p>
 <p>It's a flask app which appears to function as a frontend for querying and getting results.  Since it's not something that I'm ever going to use after the tutorial I'm going to ignore most of it and run my own scripts instead.  However, they included a <strong>JSON of sample data</strong> where each record looks like this:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Effective: March 2020\nPurpose\n\n...&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Work From Home Policy&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./sharepoint/Work from home policy.txt&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;created_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2020-03-01&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2020-03-01&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;teams&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;rolePermissions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;demo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;manager&quot;</span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">{
+  &quot;content&quot;: &quot;Effective: March 2020\nPurpose\n\n...&quot;,
+  &quot;name&quot;: &quot;Work From Home Policy&quot;,
+    &quot;url&quot;: &quot;./sharepoint/Work from home policy.txt&quot;,
+    &quot;created_on&quot;: &quot;2020-03-01&quot;,
+    &quot;updated_at&quot;: &quot;2020-03-01&quot;,
+    &quot;category&quot;: &quot;teams&quot;,
+    &quot;rolePermissions&quot;: [&quot;demo&quot;, &quot;manager&quot;]
+}
+</code></pre>
 
 <p>I've truncated the string in "content" so it would fit here.  Awesome, sample data!</p>
 <h2 id="full-text-search">Full-Text Search</h2>
 <p>Ah, this part goes over the ES <em>Python</em> client, which is why they included a <em>Python</em> flask sample app.  Makes sense.  I'll blaze my own path here since all I need is to write some code to query my local ES.  The endpoint to interact with my ES cluster is <localhost:9200>.</p>
 <p>After making a tiny venv to use, I install the Python <code>elasticsearch</code> package.  Let's see what this little guy can do.  Following the tutorial with slight modifications, I try:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+<pre class="codehilite"><code class="language-python linenums">from elasticsearch import Elasticsearch
 
 
-<span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span><span class="s2">&quot;http://localhost:9200&quot;</span><span class="p">)</span>
-        <span class="n">client_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Connected to Elasticsearch!&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">client_info</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+class Search:
+    def __init__(self):
+        self.es = Elasticsearch(&quot;http://localhost:9200&quot;)
+        client_info = self.es.info()
+        print(&quot;Connected to Elasticsearch!&quot;)
+        print(client_info.body)
 
 
-<span class="n">es</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
-</code></pre></div></td></tr></table></div>
+es = Search()
+</code></pre>
 
 <p>This gives me the following response:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>elastic_transport.ConnectionError: Connection error caused by: ConnectionError
-(Connection error caused by: ProtocolError ((&#39;Connection aborted.&#39;, 
-RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-text linenums">elastic_transport.ConnectionError: Connection error caused by: ConnectionError
+(Connection error caused by: ProtocolError (('Connection aborted.', 
+RemoteDisconnected('Remote end closed connection without response'))))
+</code></pre>
 
 <p>Oh, I bet I need to use <code>https</code> to talk to ES.  Since I don't want to deal with all the certificate stuff right now, and since this is <em>not</em> a production application, I went into the docker compose file and commented out everything that looked SSL-y to me.  I <code>docker compose up</code> and I'm good to go.</p>
 <p>The same code now gives me:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code>Connected to Elasticsearch!
+<pre class="codehilite"><code class="language-text linenums">Connected to Elasticsearch!
 {
-  &#39;name&#39;: &#39;es01&#39;,
-  &#39;cluster_name&#39;: &#39;docker-cluster&#39;,
-  &#39;cluster_uuid&#39;: &#39;quQ8sGbMRhO80D5nUlDRPw&#39;,
-  &#39;version&#39;: {&#39;number&#39;: &#39;8.12.1&#39;,
-  &#39;build_flavor&#39;: &#39;default&#39;,
-  &#39;build_type&#39;: &#39;docker&#39;,
-  &#39;build_hash&#39;: &#39;6185ba65d27469afabc9bc951cded6c17c21e3f3&#39;,
-  &#39;build_date&#39;: &#39;2024-02-01T13:07:13.727175297Z&#39;,
-  &#39;build_snapshot&#39;: False,
-  &#39;lucene_version&#39;: &#39;9.9.2&#39;,
-  &#39;minimum_wire_compatibility_version&#39;: &#39;7.17.0&#39;,
-  &#39;minimum_index_compatibility_version&#39;: &#39;7.0.0&#39;},
-  &#39;tagline&#39;: &#39;You Know, for Search&#39;
+  'name': 'es01',
+  'cluster_name': 'docker-cluster',
+  'cluster_uuid': 'quQ8sGbMRhO80D5nUlDRPw',
+  'version': {'number': '8.12.1',
+  'build_flavor': 'default',
+  'build_type': 'docker',
+  'build_hash': '6185ba65d27469afabc9bc951cded6c17c21e3f3',
+  'build_date': '2024-02-01T13:07:13.727175297Z',
+  'build_snapshot': False,
+  'lucene_version': '9.9.2',
+  'minimum_wire_compatibility_version': '7.17.0',
+  'minimum_index_compatibility_version': '7.0.0'},
+  'tagline': 'You Know, for Search'
 }
-</code></pre></div></td></tr></table></div>
+</code></pre>
 
 <p>Great!  The <code>elasticsearch.Elasticsearch()</code> class is a client class which takes a host as its first parameter. I can make sure it connected to a cluster with the <code>.info()</code> method.  </p>
 <p>What's next?  Maybe we put in a document?</p>
@@ -143,36 +107,20 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <p>In this section you are going to let Elasticsearch figure out the schema on its own, which works quite well for simple data types such as text, numbers and dates. Later, after you are introduced to more complex data types, you will learn how to provide explicit schema definitions.</p>
 </blockquote>
 <p>So... sort of.  Let's see how it goes in practice.</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="o">...</span>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    def __init__(self):
+        ...
 
-    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">,</span> <span class="n">ignore_unavailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">)</span>
+    def create_index(self):
+        self.es.indices.delete(index='my_documents', ignore_unavailable=True)
+        self.es.indices.create(index='my_documents')
 
-<span class="n">es</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
-<span class="n">es</span><span class="o">.</span><span class="n">create_index</span><span class="p">()</span>
-</code></pre></div></td></tr></table></div>
+es = Search()
+es.create_index()
+</code></pre>
 
 <p>The <code>ignore_unavailable=True</code> functions like the <code>IF EXISTS</code> in SQL: if ES can't find the index it ignores the delete command.  After executing my code, the docker logs give me:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>{
+<pre class="codehilite"><code class="language-text linenums">{
   &quot;@timestamp&quot;:&quot;2024-02-24T07:51:59.436Z&quot;,
   &quot;log.level&quot;: &quot;INFO&quot;,
   &quot;message&quot;:&quot;[my_documents] creating index,
@@ -180,394 +128,232 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
   templates [],
   shards [1]/[1]&quot;,
 ...
-</code></pre></div></td></tr></table></div>
+</code></pre>
 
 <p>That tells me that our index creation worked.  Let's add a document to this index.</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="o">...</span>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    ...
 
-    <span class="k">def</span> <span class="nf">insert_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;my_documents&quot;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
+    def insert_document(self, document):
+        return self.es.index(index=&quot;my_documents&quot;, body=document)
 
 
-<span class="n">es</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
-<span class="n">es</span><span class="o">.</span><span class="n">create_index</span><span class="p">()</span>
+es = Search()
+es.create_index()
 
-<span class="n">document</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Work From Home Policy&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;contents&quot;</span><span class="p">:</span> <span class="s2">&quot;The purpose of this full-time work-from-home policy is...&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;created_on&quot;</span><span class="p">:</span> <span class="s2">&quot;2023-11-02&quot;</span><span class="p">,</span>
-<span class="p">}</span>
-<span class="n">resp</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">insert_document</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">document</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="p">[</span><span class="s2">&quot;_id&quot;</span><span class="p">])</span>
-</code></pre></div></td></tr></table></div>
+document = {
+    &quot;title&quot;: &quot;Work From Home Policy&quot;,
+    &quot;contents&quot;: &quot;The purpose of this full-time work-from-home policy is...&quot;,
+    &quot;created_on&quot;: &quot;2023-11-02&quot;,
+}
+resp = es.insert_document(document=document)
+print(resp[&quot;_id&quot;])
+</code></pre>
 
 <p>This outputs the associated response ID and shows that it has, indeed, inserted our document into the index.  </p>
 <p>Does the index now have an associated schema?  In the <a href="https://elasticsearch-py.readthedocs.io/en/v8.12.1/api/elasticsearch.html">docs</a> it shows we can use <code>client.indices.get(index="*")</code> to get the Index API.  Let's try it out.</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="o">...</span>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    ...
 
-    <span class="k">def</span> <span class="nf">index_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+    def index_info(self):
+        return self.es.indices.get(index=&quot;*&quot;)
+</code></pre>
 
 <p>Which returns the following:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;my_documents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;aliases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="w">    </span><span class="nt">&quot;mappings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;contents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;fields&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;keyword&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">              </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">,</span>
-<span class="w">              </span><span class="nt">&quot;ignore_above&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">256</span>
-<span class="w">            </span><span class="p">}</span>
-<span class="w">          </span><span class="p">}</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;created_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date&quot;</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;fields&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;keyword&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">              </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">,</span>
-<span class="w">              </span><span class="nt">&quot;ignore_above&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">256</span>
-<span class="w">            </span><span class="p">}</span>
-<span class="w">          </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">{
+  &quot;my_documents&quot;: {
+    &quot;aliases&quot;: {},
+    &quot;mappings&quot;: {
+      &quot;properties&quot;: {
+        &quot;contents&quot;: {
+          &quot;type&quot;: &quot;text&quot;,
+          &quot;fields&quot;: {
+            &quot;keyword&quot;: {
+              &quot;type&quot;: &quot;keyword&quot;,
+              &quot;ignore_above&quot;: 256
+            }
+          }
+        },
+        &quot;created_on&quot;: {
+          &quot;type&quot;: &quot;date&quot;
+        },
+        &quot;title&quot;: {
+          &quot;type&quot;: &quot;text&quot;,
+          &quot;fields&quot;: {
+            &quot;keyword&quot;: {
+              &quot;type&quot;: &quot;keyword&quot;,
+              &quot;ignore_above&quot;: 256
+            }
+          }
+        }
+      }
+    },
+  }
+}
+</code></pre>
 
 <p>It looks like our fields are in <code>my_documents &gt; mappings &gt; properties</code>.  I'm not sure what the "keyword" property is, but it did get the date field right and everything else looks okay.  Let's move on.</p>
-<p>The tutorial tells us that, while I <em>can</em> ingest documents this way, realistically I will want to use the <code>bulk</code> method to ingrest a bunch of documents at once.  Makes sense to me.  I'll plop it in the <code>Search</code> class:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="o">...</span>
-    <span class="k">def</span> <span class="nf">insert_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">documents</span><span class="p">):</span>
-            <span class="n">operations</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
-                <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;_index&#39;</span><span class="p">:</span> <span class="s1">&#39;my_documents&#39;</span><span class="p">}})</span>
-                <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">bulk</span><span class="p">(</span><span class="n">operations</span><span class="o">=</span><span class="n">operations</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+<p>The tutorial tells us that, while I <em>can</em> ingest documents this way, realistically I will want to use the <code>bulk</code> method to ingest a bunch of documents at once.  Makes sense to me.  I'll plop it in the <code>Search</code> class:</p>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    ...
+    def insert_documents(self, documents):
+            operations = []
+            for document in documents:
+                operations.append({'index': {'_index': 'my_documents'}})
+                operations.append(document)
+            return self.es.bulk(operations=operations)
+</code></pre>
 
 <p>The rest of this section is about how to use the flask app with all of this.  I'll ignore it since I'm not going to use the included flask app.</p>
 <p><strong>All of the code up until now, minus some of the stuff that wasn't important:</strong></p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
+<pre class="codehilite"><code class="language-python linenums">import json
 
-<span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+from elasticsearch import Elasticsearch
 
 
-<span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span><span class="s2">&quot;http://localhost:9200&quot;</span><span class="p">)</span>
-        <span class="n">client_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Connected to Elasticsearch!&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">client_info</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+class Search:
+    def __init__(self):
+        self.es = Elasticsearch(&quot;http://localhost:9200&quot;)
+        client_info = self.es.info()
+        print(&quot;Connected to Elasticsearch!&quot;)
+        print(client_info.body)
 
-    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;my_documents&quot;</span><span class="p">,</span> <span class="n">ignore_unavailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;my_documents&quot;</span><span class="p">)</span>
+    def create_index(self):
+        self.es.indices.delete(index=&quot;my_documents&quot;, ignore_unavailable=True)
+        self.es.indices.create(index=&quot;my_documents&quot;)
 
-    <span class="k">def</span> <span class="nf">insert_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">documents</span><span class="p">):</span>
-        <span class="n">operations</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
-            <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;_index&quot;</span><span class="p">:</span> <span class="s2">&quot;my_documents&quot;</span><span class="p">}})</span>
-            <span class="n">operations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">bulk</span><span class="p">(</span><span class="n">operations</span><span class="o">=</span><span class="n">operations</span><span class="p">)</span>
+    def insert_documents(self, documents):
+        operations = []
+        for document in documents:
+            operations.append({&quot;index&quot;: {&quot;_index&quot;: &quot;my_documents&quot;}})
+            operations.append(document)
+        return self.es.bulk(operations=operations)
 
 
-<span class="n">es</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
-<span class="n">es</span><span class="o">.</span><span class="n">create_index</span><span class="p">()</span>
+es = Search()
+es.create_index()
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;sample-data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">documents</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-<span class="n">es</span><span class="o">.</span><span class="n">insert_documents</span><span class="p">(</span><span class="n">documents</span><span class="o">=</span><span class="n">documents</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+with open(&quot;sample-data.json&quot;, &quot;r&quot;, encoding=&quot;utf-8&quot;) as f:
+    documents = json.load(f)
+es.insert_documents(documents=documents)
+</code></pre>
 
 <p>Note that the <code>sample-data.json</code> is the data that was included in the tutorial's sample application.</p>
 <h2 id="search-basics">Search Basics</h2>
 <p>The search method will also sit in the <code>Search</code> class and looks like this:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="o">...</span>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    ...
 
-    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;my_documents&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+    def search(self, **query_args):
+        return self.es.search(index='my_documents', **query_args)
+</code></pre>
 
 <p>The only thing that I need to know is: <em>what do the query args look like?</em>  The <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html">match query</a> is "baby's first query" for ES and the way it's written for the Python client is:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
-    <span class="n">query</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;match&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="s1">&#39;search text here&#39;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-python linenums">es.search(
+    query={
+        'match': {
+            'name': {
+                'query': 'search text here'
+            }
+        }
+    }
+)
+</code></pre>
 
 <p>Running this returns a whole big JSON of things; the "hits" portion gives me what I want to see:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">&quot;hits&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;relation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;eq&quot;</span>
-<span class="w">  </span><span class="p">},</span><span class="w"> </span>
-<span class="w">  </span><span class="nt">&quot;max_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span>
-<span class="w">  </span><span class="nt">&quot;hits&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">&quot;hits&quot;: {
+  &quot;total&quot;: {
+    &quot;value&quot;: 0, &quot;relation&quot;: &quot;eq&quot;
+  }, 
+  &quot;max_score&quot;: null, 
+  &quot;hits&quot;: []
+}
+</code></pre>
 
 <p>Well, that makes sense, since "search text here" isn't going to match anything in my documents.  Since I'll be using the match query a bit, I decided to make it a method:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Search</span><span class="p">:</span>
-    <span class="o">...</span>
+<pre class="codehilite"><code class="language-python linenums">class Search:
+    ...
 
-    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;my_documents&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">query_args</span><span class="p">)</span>
+    def search(self, **query_args):
+        return self.es.search(index=&quot;my_documents&quot;, **query_args)
 
-    <span class="k">def</span> <span class="nf">match_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">}}})</span>
-</code></pre></div></td></tr></table></div>
+    def match_search(self, text):
+        return self.search(query={&quot;match&quot;: {&quot;name&quot;: {&quot;query&quot;: text}}})
+</code></pre>
 
 <p>Running this with the query <code>"work from home"</code> gives me a huge output.  The fields for the response can be found <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html#search-api-response-body">here</a>, but it includes the text the search term was found in and the <em>document id</em>.  This document id can be used with <code>self.es.get(index='my_documents', id=id)</code> to return the document itself.</p>
 <p>There is also a way to match queries in different fields called <em>multi_match</em>.  The query looks like this:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;multi_match&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w">    </span><span class="s2">&quot;this is a test&quot;</span><span class="p">,</span><span class="w"> </span>
-<span class="w">      </span><span class="nt">&quot;fields&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;subject&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;message&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">{
+  &quot;query&quot;: {
+    &quot;multi_match&quot; : {
+      &quot;query&quot;:    &quot;this is a test&quot;, 
+      &quot;fields&quot;: [ &quot;subject&quot;, &quot;message&quot; ] 
+    }
+  }
+}
+</code></pre>
 
 <p>The Python equivalent is how I expected it to look, similar to our above match query.</p>
 <h2 id="pagination">Pagination</h2>
 <p>Everyone's <em>favorite</em>: pagination.  Frustrating to keep track of, annoying when it errors out.  Luckily, it's not too bad here:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">results</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
-    <span class="n">query</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;multi_match&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
-            <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">],</span>
-        <span class="p">}</span>
-    <span class="p">},</span> <span class="n">size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">from_</span><span class="o">=</span><span class="mi">5</span>
-<span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-python linenums">results = es.search(
+    query={
+        'multi_match': {
+            'query': query,
+            'fields': ['name', 'summary', 'content'],
+        }
+    }, size=5, from_=5
+)
+</code></pre>
 
 <p>Similar to how I'd expect it, with the exception of the underscore in <code>from_</code>.</p>
 <p>Not much else going on here, so I'll move on.</p>
 <h2 id="boolean-queries-and-filtering">Boolean Queries and Filtering</h2>
 <p>The structure of the booleans, even after reading the tutorial page, was a bit fuzzy to me.  I looked up <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html">an example</a> which gives the gist of it:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;bool&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;must&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;user.id&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kimchy&quot;</span><span class="w"> </span><span class="p">}</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;tags&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="w"> </span><span class="p">}</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;must_not&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;range&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;age&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;gte&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;lte&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;should&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;tags&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;env1&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
-<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;tags&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deployed&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-<span class="w">      </span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;minimum_should_match&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;boost&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">{
+  &quot;query&quot;: {
+    &quot;bool&quot; : {
+      &quot;must&quot; : {
+        &quot;term&quot; : { &quot;user.id&quot; : &quot;kimchy&quot; }
+      },
+      &quot;filter&quot;: {
+        &quot;term&quot; : { &quot;tags&quot; : &quot;production&quot; }
+      },
+      &quot;must_not&quot; : {
+        &quot;range&quot; : {
+          &quot;age&quot; : { &quot;gte&quot; : 10, &quot;lte&quot; : 20 }
+        }
+      },
+      &quot;should&quot; : [
+        { &quot;term&quot; : { &quot;tags&quot; : &quot;env1&quot; } },
+        { &quot;term&quot; : { &quot;tags&quot; : &quot;deployed&quot; } }
+      ],
+      &quot;minimum_should_match&quot; : 1,
+      &quot;boost&quot; : 1.0
+    }
+  }
+}
+</code></pre>
 
 <p>Looks complicated at first, but if we cut out some of the outer fields it becomes a bit easier to read.  Everything is nested in the <code>query &gt; bool</code> fields, so I'll get rid of those:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">&quot;must&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;user.id&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kimchy&quot;</span><span class="w"> </span><span class="p">}</span>
-<span class="p">},</span>
-<span class="nt">&quot;filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;tags&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="w"> </span><span class="p">}</span>
-<span class="p">},</span>
-<span class="nt">&quot;must_not&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;range&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;age&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;gte&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;lte&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">},</span>
-<span class="nt">&quot;should&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;tags&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;env1&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;term&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;tags&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deployed&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-<span class="p">],</span>
-<span class="nt">&quot;minimum_should_match&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="nt">&quot;boost&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">&quot;must&quot; : {
+    &quot;term&quot; : { &quot;user.id&quot; : &quot;kimchy&quot; }
+},
+&quot;filter&quot;: {
+    &quot;term&quot; : { &quot;tags&quot; : &quot;production&quot; }
+},
+&quot;must_not&quot; : {
+    &quot;range&quot; : {
+        &quot;age&quot; : { &quot;gte&quot; : 10, &quot;lte&quot; : 20 }
+    }
+},
+&quot;should&quot; : [
+    { &quot;term&quot; : { &quot;tags&quot; : &quot;env1&quot; } },
+    { &quot;term&quot; : { &quot;tags&quot; : &quot;deployed&quot; } }
+],
+&quot;minimum_should_match&quot; : 1,
+&quot;boost&quot; : 1.0
+</code></pre>
 
 <p>According to the tutorial, there's four different ways to combine queries:</p>
 <ul>
@@ -590,65 +376,38 @@ RemoteDisconnected(&#39;Remote end closed connection without response&#39;))))
 <p>The last part of the Vector Search section is about "Faceted Search" which is a pattern where users search something and when the result is returned the user is presented with a list of <em>suggested filters</em> which they can add to the query.</p>
 <p>For example, if the user searched "work from home policy" then the results may contain articles from 2018, 2019, 2020, etc.  The user can be shown these years so that they can opt to choose one or more of these to further filter documents.</p>
 <p>The most important part here for me right now is the <em>aggregation</em>.  It's easy to understand ES's <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-terms-aggregation.html">Terms Aggregation</a> with an example, which I copy from that link:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;aggs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;genres&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;terms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;field&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;genre&quot;</span><span class="w"> </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">{
+  &quot;aggs&quot;: {
+    &quot;genres&quot;: {
+      &quot;terms&quot;: { &quot;field&quot;: &quot;genre&quot; }
+    }
+  }
+}
+</code></pre>
 
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;aggregations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;genres&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;doc_count_error_upper_bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">   </span>
-<span class="w">      </span><span class="nt">&quot;sum_other_doc_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">           </span>
-<span class="w">      </span><span class="nt">&quot;buckets&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">                        </span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;electronic&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;doc_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rock&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;doc_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;jazz&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;doc_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">]</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+<pre class="codehilite"><code class="language-json linenums">{
+  &quot;aggregations&quot;: {
+    &quot;genres&quot;: {
+      &quot;doc_count_error_upper_bound&quot;: 0,   
+      &quot;sum_other_doc_count&quot;: 0,           
+      &quot;buckets&quot;: [                        
+        {
+          &quot;key&quot;: &quot;electronic&quot;,
+          &quot;doc_count&quot;: 6
+        },
+        {
+          &quot;key&quot;: &quot;rock&quot;,
+          &quot;doc_count&quot;: 3
+        },
+        {
+          &quot;key&quot;: &quot;jazz&quot;,
+          &quot;doc_count&quot;: 2
+        }
+      ]
+    }
+  }
+}
+</code></pre>
 
 <p>In <code>aggregations &gt; genres</code> there's a bunch of keys along with the number of docs containing those keys.  Notice I didn't do any filtering or boolean stuff in the query but I could have and that would have made the aggregation only count those results.  It feels close to using <code>GROUP BY</code> and <code>COUNT()</code> in SQL.</p>
 <h2 id="next-time">Next Time</h2>

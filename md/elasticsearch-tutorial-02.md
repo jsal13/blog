@@ -45,7 +45,7 @@ The tutorial goes on and tells me that I'll use embeddings to help find concepts
 
 As soon as I get onto the next page of the tutorial, it tells me to go install [SentenceTransformers](https://www.sbert.net/).  I've heard of this before but haven't worked with it.
 
-The tutorial tells me to select a pre-trained model.  Sure, that's reasonable, I don't want to have to spend all my time training this thing &mdash; and I almost certainly don't have enough data to train it on!  The tutorial recommends the `all-MiniLM-L6-v2` model on [huggingface](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) and I have no strong opposition.
+The tutorial tells me to select a pre-trained model.  Sure, that's reasonable, I don't want to have to spend all my time training this thing &mdash; and I almost certainly don't have enough data to train it on!  The tutorial recommends the `all-MiniLM-L6-v2` model on [HuggingFace](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) and I have no strong opposition.
 
 <figure>
     <img src="../assets/images/elasticsearch-tutorial-02_model_tags.png"
@@ -149,7 +149,7 @@ Luckily, ES is going to do the work for me.  By default, ES will use [cosine sim
 
 ## Hybrid Search
 
-This section talks about [Reciprocal Rank Fusion](https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html).  Seems like a fancy polling-type thing where a few different result sets can be compared.  The algorithm is suprisingly simple:
+This section talks about [Reciprocal Rank Fusion](https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html).  Seems like a fancy polling-type thing where a few different result sets can be compared.  The algorithm is surprisingly simple:
 
 ```python
 score = 0.0

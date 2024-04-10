@@ -64,7 +64,7 @@ sparse_vector_condensed = {
 }
 ```
 
-This can be slimmed down some more, but the point is that a lot of space can be saved with this.  Moreover, it's a simple exercise to define things like dot products or even matrix operations for sparse matricies.  Neato.
+This can be slimmed down some more, but the point is that a lot of space can be saved with this.  Moreover, it's a simple exercise to define things like dot products or even matrix operations for sparse matrices.  Neato.
 
 Enough of me gushing about sparse vectors, let me get back to the tutorial at hand.
 

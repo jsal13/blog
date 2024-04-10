@@ -31,130 +31,69 @@
 <p>I'll work in Python for this post but all of these issues can and do pop up in every other language and are solved in similar ways.</p>
 <h2 id="the-problem-and-first-solution">The Problem and First Solution</h2>
 <p><strong>Problem</strong>: The job of the following code is to make a (string) label for another module when it is called.  For example, it may return "Minor: Prime (New Customer)" which implies the customer is under 18 years old, has Prime FICO rating (don't worry if you don't know what this is!), and is a new customer.</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># ORIGINAL, NO REFACTORING.</span>
+<pre class="codehilite"><code class="language-python linenums"># ORIGINAL, NO REFACTORING.
 
-<span class="c1"># customer_type.py</span>
+# customer_type.py
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
-    <span class="c1"># a: first name</span>
-    <span class="c1"># b: last name</span>
-    <span class="c1"># c: age</span>
-    <span class="c1"># d: fico score</span>
-    <span class="c1"># e: previous customer???</span>
-    <span class="k">if</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="mi">18</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;</span> <span class="mi">580</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Deep Subprime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Deep Subprime (New Customer)&quot;</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">580</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">620</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Subprime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Subprime (New Customer)&quot;</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">619</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">620</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Near Prime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Near Prime (New Customer)&quot;</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">660</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">719</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Prime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Prime (New Customer)&quot;</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;=</span> <span class="mi">720</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Super-Prime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Super-Prime (New Customer)&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;</span> <span class="mi">580</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Deep Subprime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Deep Subprime (New Customer)&quot;</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">580</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">620</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Subprime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Subprime (New Customer)&quot;</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">619</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">620</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Near Prime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Near Prime (New Customer)&quot;</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">660</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">719</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Prime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Prime (New Customer)&quot;</span>
-        <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;=</span> <span class="mi">720</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Super-Prime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Adult: Super-Prime (New Customer)&quot;</span>
-</code></pre></div></td></tr></table></div>
+def main(a, b, c, d, e):
+    # a: first name
+    # b: last name
+    # c: age
+    # d: fico score
+    # e: previous customer???
+    if c &lt; 18:
+        if d &lt; 580:
+            if e == True:
+                return &quot;Minor: Deep Subprime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Minor: Deep Subprime (New Customer)&quot;
+        if d &gt; 580 and d &lt;= 620:
+            if e == True:
+                return &quot;Minor: Subprime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Minor: Subprime (New Customer)&quot;
+        if d &gt; 619 and d &lt;= 620:
+            if e == True:
+                return &quot;Minor: Near Prime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Minor: Near Prime (New Customer)&quot;
+        if d &gt; 660 and d &lt;= 719:
+            if e == True:
+                return &quot;Minor: Prime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Minor: Prime (New Customer)&quot;
+        if d &gt;= 720:
+            if e == True:
+                return &quot;Minor: Super-Prime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Minor: Super-Prime (New Customer)&quot;
+    else:
+        if d &lt; 580:
+            if e == True:
+                return &quot;Adult: Deep Subprime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Adult: Deep Subprime (New Customer)&quot;
+        if d &gt; 580 and d &lt;= 620:
+            if e == True:
+                return &quot;Adult: Subprime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Adult: Subprime (New Customer)&quot;
+        if d &gt; 619 and d &lt;= 620:
+            if e == True:
+                return &quot;Adult: Near Prime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Adult: Near Prime (New Customer)&quot;
+        if d &gt; 660 and d &lt;= 719:
+            if e == True:
+                return &quot;Adult: Prime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Adult: Prime (New Customer)&quot;
+        if d &gt;= 720:
+            if e == True:
+                return &quot;Adult: Super-Prime (Previous Customer)&quot;
+            if e == False:
+                return &quot;Adult: Super-Prime (New Customer)&quot;
+</code></pre>
 
 <p>It may be surprising (or not) to know that this is (strongly) based on a real function I inherited while at a past job.  At least they gave us some comments on what the arguments mean!</p>
 <p>There's a lot to pick through, so I'm going to list some things which aren't great:</p>
@@ -170,265 +109,147 @@
 <h2 id="non-descriptive-variable-names-and-unused-variables">Non-Descriptive Variable Names and Unused Variables</h2>
 <p>There are few (if any) reasons these days not to make a variable name expressive. In the past, due to space limitations, variables might look like <code>CLS21</code> and have a data dictionary which noted what meant what.  Today, I can expand them out to make them more clear.</p>
 <p>Additionally, let's take out any variables/arguments which are not being used by the code.  There may be reasons to keep these variables in (for example, to make a connection work with an existing API) but I will assume they are unnecessary in this case.</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># FIRST REFACTOR: Descriptive Variable Names, No Unused Variables.</span>
+<pre class="codehilite"><code class="language-python linenums"># FIRST REFACTOR: Descriptive Variable Names, No Unused Variables.
 
-<span class="c1"># customer_type.py</span>
+# customer_type.py
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">age</span><span class="p">,</span> <span class="n">fico_score</span><span class="p">,</span> <span class="n">is_previous_customer</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="mi">18</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&lt;</span> <span class="mi">580</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">is_previous_customer</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Deep Subprime (Previous Customer)&quot;</span>
-            <span class="k">if</span> <span class="n">is_previous_customer</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;Minor: Deep Subprime (New Customer)&quot;</span>
-<span class="o">...</span>
-<span class="o">...</span>
-</code></pre></div></td></tr></table></div>
+def main(age, fico_score, is_previous_customer):
+    if age &lt; 18:
+        if fico_score &lt; 580:
+            if is_previous_customer == True:
+                return &quot;Minor: Deep Subprime (Previous Customer)&quot;
+            if is_previous_customer == False:
+                return &quot;Minor: Deep Subprime (New Customer)&quot;
+...
+...
+</code></pre>
 
 <p>At this point, I can remove the "docs" at the top since the variables are expressive.  I'll put a proper docstring in later.</p>
 <h2 id="repetition-dont-repeat-yourself-dry">Repetition, Don't Repeat Yourself (DRY)</h2>
 <p>One important principle to consider when refactoring is <em>DRY: Don't Repeat Yourself</em>.  When you have virtually identical code that appears two or more times, you may want to consider making this code into its own variable, function, or class.  One main reason for this is: if you need to change or debug the code, then you only need to change or debug it in one place instead of however many times you've copy-pasted it.  Much easier, much less error-prone.</p>
 <p>There are three obvious places to do this in the code above: the <code>if</code>-statement that checks for previous customer or new customer, the <code>if</code>-statement which checks for "Minor / Adult" and the <code>if</code>-statement that checks the score.</p>
 <p>In order to refactor these statements, it may be better to make a "template string" which is filled in with some variables as the <code>if</code>-statements are worked through.  For example, I start with the blank string, then add in if the customer is a Minor, then add in the Credit Rating, then add in New Customer or not.</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># SECOND REFACTOR: TEMPLATE STRINGS + UNNESTING IFs</span>
+<pre class="codehilite"><code class="language-python linenums"># SECOND REFACTOR: TEMPLATE STRINGS + UNNESTING IFs
 
-<span class="c1"># customer_type.py</span>
+# customer_type.py
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">age</span><span class="p">,</span> <span class="n">fico_score</span><span class="p">,</span> <span class="n">is_previous_customer</span><span class="p">):</span>
+def main(age, fico_score, is_previous_customer):
 
-    <span class="n">customer_age_label</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">credit_rating</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">prev_or_new_cust</span> <span class="o">=</span><span class="s2">&quot;&quot;</span>
+    customer_age_label = &quot;&quot;
+    credit_rating = &quot;&quot;
+    prev_or_new_cust =&quot;&quot;
 
-    <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="mi">18</span><span class="p">:</span>
-        <span class="n">customer_age_label</span> <span class="o">=</span> <span class="s2">&quot;Minor&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">customer_age_label</span> <span class="o">=</span> <span class="s2">&quot;Adult&quot;</span>
+    if age &lt; 18:
+        customer_age_label = &quot;Minor&quot;
+    else:
+        customer_age_label = &quot;Adult&quot;
 
-    <span class="k">if</span> <span class="n">is_previous_customer</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">prev_or_new_cust</span> <span class="o">=</span> <span class="s2">&quot;Previous Customer&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">prev_or_new_cust</span> <span class="o">=</span> <span class="s2">&quot;New Customer&quot;</span>
+    if is_previous_customer == True:
+        prev_or_new_cust = &quot;Previous Customer&quot;
+    else:
+        prev_or_new_cust = &quot;New Customer&quot;
 
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&lt;</span> <span class="mi">580</span><span class="p">:</span>
-        <span class="n">credit_rating</span> <span class="o">=</span> <span class="s2">&quot;Deep-Subprime&quot;</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&gt;</span> <span class="mi">580</span> <span class="ow">and</span> <span class="n">fico_score</span> <span class="o">&lt;=</span> <span class="mi">620</span><span class="p">:</span>
-        <span class="n">credit_rating</span> <span class="o">=</span> <span class="s2">&quot;Subprime&quot;</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&gt;</span> <span class="mi">619</span> <span class="ow">and</span> <span class="n">fico_score</span> <span class="o">&lt;=</span> <span class="mi">620</span><span class="p">:</span>
-        <span class="n">credit_rating</span> <span class="o">=</span> <span class="s2">&quot;Near-Prime&quot;</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&gt;</span> <span class="mi">660</span> <span class="ow">and</span> <span class="n">fico_score</span> <span class="o">&lt;=</span> <span class="mi">719</span><span class="p">:</span>
-        <span class="n">credit_rating</span> <span class="o">=</span> <span class="s2">&quot;Prime&quot;</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&gt;=</span> <span class="mi">720</span><span class="p">:</span>
-        <span class="n">credit_rating</span> <span class="o">=</span> <span class="s2">&quot;Super Prime&quot;</span>
+    if fico_score &lt; 580:
+        credit_rating = &quot;Deep-Subprime&quot;
+    if fico_score &gt; 580 and fico_score &lt;= 620:
+        credit_rating = &quot;Subprime&quot;
+    if fico_score &gt; 619 and fico_score &lt;= 620:
+        credit_rating = &quot;Near-Prime&quot;
+    if fico_score &gt; 660 and fico_score &lt;= 719:
+        credit_rating = &quot;Prime&quot;
+    if fico_score &gt;= 720:
+        credit_rating = &quot;Super Prime&quot;
 
-    <span class="n">customer_label</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{customer_age_label}</span><span class="s2">: </span><span class="si">{credit_rating}</span><span class="s2"> (</span><span class="si">{prev_or_new_cust}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
-        <span class="s1">&#39;customer_age_label&#39;</span><span class="p">:</span> <span class="n">customer_age_label</span><span class="p">,</span>
-        <span class="s1">&#39;credit_rating&#39;</span><span class="p">:</span> <span class="n">credit_rating</span><span class="p">,</span>
-        <span class="s1">&#39;prev_or_new_cust&#39;</span><span class="p">:</span> <span class="n">prev_or_new_cust</span>
-    <span class="p">})</span>
+    customer_label = &quot;{customer_age_label}: {credit_rating} ({prev_or_new_cust})&quot;.format(**{
+        'customer_age_label': customer_age_label,
+        'credit_rating': credit_rating,
+        'prev_or_new_cust': prev_or_new_cust
+    })
 
-    <span class="k">return</span> <span class="n">customer_label</span>
-</code></pre></div></td></tr></table></div>
+    return customer_label
+</code></pre>
 
 <p>While not <em>perfect</em>, it's certainly cleaner and shorter.  There is one Python-specific thing we've done, which is the "<a href="https://docs.python.org/3/tutorial/inputoutput.html#the-string-format-method">string format() method</a>" at the bottom.  This formatting allows us to easily create strings and use a dictionary to fill things in (notice the <code>**</code> which unpacks the dictionary in the <code>.format</code> method).  If you don't use Python, or don't want to use string formatting like this, it's also easy to add these variables together in an appropriate way once I have them.</p>
 <h2 id="functions-doing-more-than-one-thing">Functions Doing More Than One Thing</h2>
 <p><strong>This function is doing quite a bit.</strong>  It's checking credit rating, if someone is a minor or not, if they're a new or returning customer.  If I was given a ton of business logic, this might become much larger and more difficult to debug.  Let's break this up into smaller functions.  While I'm at it, let's also <em>put in <a href="https://docs.python.org/3/library/typing.html">type hints</a></em>,</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># THIRD REFACTOR: FUNCTIONS SHOULD DO ONE THING.</span>
-<span class="c1"># customer_type.py</span>
+<pre class="codehilite"><code class="language-python linenums"># THIRD REFACTOR: FUNCTIONS SHOULD DO ONE THING.
+# customer_type.py
 
-<span class="k">def</span> <span class="nf">customer_age_label</span><span class="p">(</span><span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">return</span> <span class="s2">&quot;Minor&quot;</span> <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="mi">18</span> <span class="k">else</span> <span class="s2">&quot;Adult&quot;</span>
+def customer_age_label(age: int) -&gt; str:
+    return &quot;Minor&quot; if age &lt; 18 else &quot;Adult&quot;
 
-<span class="k">def</span> <span class="nf">credit_rating_label</span><span class="p">(</span><span class="n">fico_score</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&lt;</span> <span class="mi">580</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;Deep-Subprime&quot;</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&gt;</span> <span class="mi">580</span> <span class="ow">and</span> <span class="n">fico_score</span> <span class="o">&lt;=</span> <span class="mi">620</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;Subprime&quot;</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&gt;</span> <span class="mi">619</span> <span class="ow">and</span> <span class="n">fico_score</span> <span class="o">&lt;=</span> <span class="mi">620</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;Near-Prime&quot;</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&gt;</span> <span class="mi">660</span> <span class="ow">and</span> <span class="n">fico_score</span> <span class="o">&lt;=</span> <span class="mi">719</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;Prime&quot;</span>
-    <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&gt;=</span> <span class="mi">720</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;Super Prime&quot;</span>
+def credit_rating_label(fico_score: int) -&gt; str:
+    if fico_score &lt; 580:
+        return &quot;Deep-Subprime&quot;
+    if fico_score &gt; 580 and fico_score &lt;= 620:
+        return &quot;Subprime&quot;
+    if fico_score &gt; 619 and fico_score &lt;= 620:
+        return &quot;Near-Prime&quot;
+    if fico_score &gt; 660 and fico_score &lt;= 719:
+        return &quot;Prime&quot;
+    if fico_score &gt;= 720:
+        return &quot;Super Prime&quot;
 
-<span class="k">def</span> <span class="nf">previous_customer_label</span><span class="p">(</span><span class="n">is_previous_customer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">return</span> <span class="s2">&quot;Previous Customer&quot;</span> <span class="k">if</span> <span class="n">is_previous_customer</span> <span class="k">else</span> <span class="s2">&quot;New Customer&quot;</span>
+def previous_customer_label(is_previous_customer: bool) -&gt; str:
+    return &quot;Previous Customer&quot; if is_previous_customer else &quot;New Customer&quot;
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">age</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fico_score</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_previous_customer</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+def main(age: str, fico_score: str, is_previous_customer: str) -&gt; str:
 
-    <span class="n">minor_or_adult</span> <span class="o">=</span> <span class="n">customer_age_label</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
-    <span class="n">credit_rating</span> <span class="o">=</span> <span class="n">credit_rating_label</span><span class="p">(</span><span class="n">fico_score</span><span class="p">)</span>
-    <span class="n">prev_or_new_cust</span> <span class="o">=</span> <span class="n">previous_customer_label</span><span class="p">(</span><span class="n">is_previous_customer</span><span class="p">)</span>
+    minor_or_adult = customer_age_label(age)
+    credit_rating = credit_rating_label(fico_score)
+    prev_or_new_cust = previous_customer_label(is_previous_customer)
 
-    <span class="n">customer_label</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{minor_or_adult}</span><span class="s2">: </span><span class="si">{credit_rating}</span><span class="s2"> (</span><span class="si">{prev_or_new_cust}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
-        <span class="s1">&#39;minor_or_adult&#39;</span><span class="p">:</span> <span class="n">minor_or_adult</span><span class="p">,</span>
-        <span class="s1">&#39;credit_rating&#39;</span><span class="p">:</span> <span class="n">credit_rating</span><span class="p">,</span>
-        <span class="s1">&#39;prev_or_new_cust&#39;</span><span class="p">:</span> <span class="n">prev_or_new_cust</span>
-    <span class="p">})</span>
+    customer_label = &quot;{minor_or_adult}: {credit_rating} ({prev_or_new_cust})&quot;.format(**{
+        'minor_or_adult': minor_or_adult,
+        'credit_rating': credit_rating,
+        'prev_or_new_cust': prev_or_new_cust
+    })
 
-    <span class="k">return</span> <span class="n">customer_label</span>
-</code></pre></div></td></tr></table></div>
+    return customer_label
+</code></pre>
 
 <p>In Python, type hints are not required (nor are they checked unless you have <a href="http://mypy-lang.org/">mypy</a>, which I recommend using), but it is important to get into the habit of giving type hints (or, for some other languages, using types when auto-types aren't obvious).  This allows us to see, at a glance, which functions are returning what types of things.</p>
 <h2 id="magic-numbers">Magic Numbers</h2>
 <p><strong><a href="https://en.wikipedia.org/wiki/Magic_number_(programming)">Magic Numbers</a></strong> are numbers in code which are meaningful but perhaps not obviously so.  These often should be replaced with constants with a meaningful name which tells us what the magic number means.</p>
 <p>In this code, I have the FICO score bounds. Luckily, these are bins and I can do a standard bin structure with an <code>for</code>-loop, but there are many other equally nice ways to do this construction.  Here's one:</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># FOURTH REFACTOR: NO MAGIC NUMBERS.</span>
+<pre class="codehilite"><code class="language-python linenums"># FOURTH REFACTOR: NO MAGIC NUMBERS.
 
-<span class="c1"># customer_type.py</span>
-<span class="n">FICO_UPPER_BOUNDS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;Deep-Subprime&quot;</span><span class="p">:</span> <span class="mi">579</span><span class="p">,</span>
-    <span class="s2">&quot;Subprime&quot;</span><span class="p">:</span> <span class="mi">619</span><span class="p">,</span>
-    <span class="s2">&quot;Near-Prime&quot;</span><span class="p">:</span> <span class="mi">659</span><span class="p">,</span>
-    <span class="s2">&quot;Prime&quot;</span><span class="p">:</span> <span class="mi">719</span><span class="p">,</span>
-    <span class="s2">&quot;Super-Prime&quot;</span><span class="p">:</span> <span class="mi">850</span>
-<span class="p">}</span>
+# customer_type.py
+FICO_UPPER_BOUNDS = {
+    &quot;Deep-Subprime&quot;: 579,
+    &quot;Subprime&quot;: 619,
+    &quot;Near-Prime&quot;: 659,
+    &quot;Prime&quot;: 719,
+    &quot;Super-Prime&quot;: 850
+}
 
-<span class="n">MINOR_AGE_UPPER_BOUND</span> <span class="o">=</span> <span class="mi">18</span>
+MINOR_AGE_UPPER_BOUND = 18
 
-<span class="k">def</span> <span class="nf">customer_age_label</span><span class="p">(</span><span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">return</span> <span class="s2">&quot;Minor&quot;</span> <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="n">MINOR_AGE_UPPER_BOUND</span> <span class="k">else</span> <span class="s2">&quot;Adult&quot;</span>
+def customer_age_label(age: int) -&gt; str:
+    return &quot;Minor&quot; if age &lt; MINOR_AGE_UPPER_BOUND else &quot;Adult&quot;
 
-<span class="k">def</span> <span class="nf">credit_rating_label</span><span class="p">(</span><span class="n">fico_score</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">upper_bound</span> <span class="ow">in</span> <span class="n">FICO_UPPER_BOUNDS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">fico_score</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">upper_bound</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">lbl</span>
+def credit_rating_label(fico_score: int) -&gt; str:
+    for lbl, upper_bound in FICO_UPPER_BOUNDS.items():
+        if fico_score &lt; int(upper_bound):
+            return lbl
 
-<span class="k">def</span> <span class="nf">previous_customer_label</span><span class="p">(</span><span class="n">is_previous_customer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">return</span> <span class="s2">&quot;Previous Customer&quot;</span> <span class="k">if</span> <span class="n">is_previous_customer</span> <span class="k">else</span> <span class="s2">&quot;New Customer&quot;</span>
+def previous_customer_label(is_previous_customer: bool) -&gt; str:
+    return &quot;Previous Customer&quot; if is_previous_customer else &quot;New Customer&quot;
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fico_score</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">is_previous_customer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+def main(age: int, fico_score: int, is_previous_customer: bool) -&gt; str:
 
-    <span class="n">minor_or_adult</span> <span class="o">=</span> <span class="n">customer_age_label</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
-    <span class="n">credit_rating</span> <span class="o">=</span> <span class="n">credit_rating_label</span><span class="p">(</span><span class="n">fico_score</span><span class="p">)</span>
-    <span class="n">prev_or_new_cust</span> <span class="o">=</span> <span class="n">previous_customer_label</span><span class="p">(</span><span class="n">is_previous_customer</span><span class="p">)</span>
+    minor_or_adult = customer_age_label(age)
+    credit_rating = credit_rating_label(fico_score)
+    prev_or_new_cust = previous_customer_label(is_previous_customer)
 
-    <span class="n">customer_label</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{minor_or_adult}</span><span class="s2">: </span><span class="si">{credit_rating}</span><span class="s2"> (</span><span class="si">{prev_or_new_cust}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
-        <span class="s1">&#39;minor_or_adult&#39;</span><span class="p">:</span> <span class="n">minor_or_adult</span><span class="p">,</span>
-        <span class="s1">&#39;credit_rating&#39;</span><span class="p">:</span> <span class="n">credit_rating</span><span class="p">,</span>
-        <span class="s1">&#39;prev_or_new_cust&#39;</span><span class="p">:</span> <span class="n">prev_or_new_cust</span>
-    <span class="p">})</span>
+    customer_label = &quot;{minor_or_adult}: {credit_rating} ({prev_or_new_cust})&quot;.format(**{
+        'minor_or_adult': minor_or_adult,
+        'credit_rating': credit_rating,
+        'prev_or_new_cust': prev_or_new_cust
+    })
 
-    <span class="k">return</span> <span class="n">customer_label</span>
-</code></pre></div></td></tr></table></div>
+    return customer_label
+</code></pre>
 
 <p>I'm being a bit sloppy here with an early return in the <code>for</code>-loop, but we'll fix this soon.  In particular, <strong>mypy</strong> won't be happy with that early return, as it's possible the function could return <code>None</code>.</p>
 <p><strong>Reader</strong>: Did you notice that there was a typo in the code, which would cause a null return if someone had a credit score of, say, 630?  Refactoring this code fixed that issue and made it significantly easier to extend, change, or check bounds.</p>
@@ -439,245 +260,130 @@
 <p>When I made the smaller functions I made one big function (<code>main</code>) pass parameters into smaller functions as arguments. Since these smaller functions exist only to help <code>main</code>, an I'm probably not going to be using this function elsewhere, this feels like a code-smell.  Indeed, this code smell could mean that I should introduce a class-type structure in our code.  Let's add this to the list, and then take a crack at some of these other bullet-point issues.  Let's try to do this one first:</p>
 <p>Make a Class and Encapsulate</p>
 <p>For some Python students, this may be the scariest step.  It's difficult to say when something ought to be a class as opposed to a function; indeed, many times it leads to some fairly heated arguments!  Nevertheless, in this case I will do it to explain how to do it.  (Note: I would favor a class in this case because of the number of parameters I'm passing as arguments to smaller business-logic-type functions.)</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># FIFTH REFACTOR: CLASS.</span>
+<pre class="codehilite"><code class="language-python linenums"># FIFTH REFACTOR: CLASS.
 
-<span class="c1"># customer_type.py</span>
-<span class="n">FICO_UPPER_BOUNDS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;Deep-Subprime&quot;</span><span class="p">:</span> <span class="mi">579</span><span class="p">,</span>
-    <span class="s2">&quot;Subprime&quot;</span><span class="p">:</span> <span class="mi">619</span><span class="p">,</span>
-    <span class="s2">&quot;Near-Prime&quot;</span><span class="p">:</span> <span class="mi">659</span><span class="p">,</span>
-    <span class="s2">&quot;Prime&quot;</span><span class="p">:</span> <span class="mi">719</span><span class="p">,</span>
-    <span class="s2">&quot;Super-Prime&quot;</span><span class="p">:</span> <span class="mi">850</span>
-<span class="p">}</span>
+# customer_type.py
+FICO_UPPER_BOUNDS = {
+    &quot;Deep-Subprime&quot;: 579,
+    &quot;Subprime&quot;: 619,
+    &quot;Near-Prime&quot;: 659,
+    &quot;Prime&quot;: 719,
+    &quot;Super-Prime&quot;: 850
+}
 
-<span class="n">MINOR_AGE_UPPER_BOUND</span> <span class="o">=</span> <span class="mi">18</span>
+MINOR_AGE_UPPER_BOUND = 18
 
-<span class="k">class</span> <span class="nc">CustomerLabel</span><span class="p">:</span>
+class CustomerLabel:
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fico_score</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">is_previous_customer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fico_score</span> <span class="o">=</span> <span class="n">fico_score</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_previous_customer</span> <span class="o">=</span> <span class="n">is_previous_customer</span>
+    def __init__(self, age: int, fico_score: int, is_previous_customer: bool):
+        self.age = age
+        self.fico_score = fico_score
+        self.is_previous_customer = is_previous_customer
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">customer_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_customer_label</span><span class="p">()</span>
+        self.customer_label = self.create_customer_label()
 
-    <span class="k">def</span> <span class="nf">customer_age_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-         <span class="k">return</span> <span class="s2">&quot;Minor&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">&lt;</span> <span class="n">MINOR_AGE_UPPER_BOUND</span> <span class="k">else</span> <span class="s2">&quot;Adult&quot;</span>
+    def customer_age_label(self) -&gt; str:
+         return &quot;Minor&quot; if self.age &lt; MINOR_AGE_UPPER_BOUND else &quot;Adult&quot;
 
-    <span class="k">def</span> <span class="nf">credit_rating_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">upper_bound</span> <span class="ow">in</span> <span class="n">FICO_UPPER_BOUNDS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fico_score</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">upper_bound</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">lbl</span>
+    def credit_rating_label(self) -&gt; str:
+        for lbl, upper_bound in FICO_UPPER_BOUNDS.items():
+            if self.fico_score &lt; int(upper_bound):
+                return lbl
 
-        <span class="c1"># TODO: Put a LOG here to make it known that a label was not returned correctly!</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        # TODO: Put a LOG here to make it known that a label was not returned correctly!
+        return &quot;&quot;
 
-    <span class="k">def</span> <span class="nf">previous_customer_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;Previous Customer&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_previous_customer</span> <span class="k">else</span> <span class="s2">&quot;New Customer&quot;</span>
+    def previous_customer_label(self) -&gt; str:
+        return &quot;Previous Customer&quot; if self.is_previous_customer else &quot;New Customer&quot;
 
-    <span class="k">def</span> <span class="nf">create_customer_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">customer_age_label</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">credit_rating_label</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">previous_customer_label</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span>
+    def create_customer_label(self) -&gt; str:
+        return f&quot;{self.customer_age_label()}: {self.credit_rating_label()} ({self.previous_customer_label()})&quot;
 
-<span class="c1"># Usage:</span>
-<span class="n">customer_label</span> <span class="o">=</span> <span class="n">CustomerLabel</span><span class="p">(</span><span class="n">age</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">fico_score</span><span class="o">=</span><span class="mi">550</span><span class="p">,</span> <span class="n">is_previous_customer</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">customer_label</span>
-</code></pre></div></td></tr></table></div>
+# Usage:
+customer_label = CustomerLabel(age=17, fico_score=550, is_previous_customer=False).customer_label
+</code></pre>
 
 <p>Notice that I've put a structure around this code which makes it trivial to add additional things to the label if I need to.  It also allows us to change the format of the label if that is required.  It is robust, scalable to new business logic, and easy to read through.  There is that weird "usage" thing at the bottom, though...</p>
 <h2 id="docstrings-misc">Docstrings &amp; Misc</h2>
 <p>I'm going to add docstrings at this point, since I'm fairly satisfied with the structure of the code.  There are a few tools which allows your editor to generate templates for these docstrings for you, giving you no excuse to not write them!  There are many different ways to write docstrings, so be consistent in your codebase.  If you use something like Sphinx or Swagger, make sure you conform to the required docstring formats.  I will use <a href="https://numpydoc.readthedocs.io/en/latest/format.html">Numpy style docstrings</a> in this sample.</p>
 <p>We've also done some minor cleanup, as noted at the top.  These are minute things which I thought might be nice as I went through the code one last time.  Additionally, we've used <a href="https://github.com/psf/black">Black</a> to format the code and make it look nice.</p>
-<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="sd">&quot;&quot;&quot;CustomerLabel class.&quot;&quot;&quot;</span>
+<pre class="codehilite"><code class="language-python linenums">&quot;&quot;&quot;CustomerLabel class.&quot;&quot;&quot;
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+from typing import Dict
 
-<span class="n">FICO_UPPER_BOUNDS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;Deep-Subprime&quot;</span><span class="p">:</span> <span class="mi">579</span><span class="p">,</span>
-    <span class="s2">&quot;Subprime&quot;</span><span class="p">:</span> <span class="mi">619</span><span class="p">,</span>
-    <span class="s2">&quot;Near-Prime&quot;</span><span class="p">:</span> <span class="mi">659</span><span class="p">,</span>
-    <span class="s2">&quot;Prime&quot;</span><span class="p">:</span> <span class="mi">719</span><span class="p">,</span>
-    <span class="s2">&quot;Super-Prime&quot;</span><span class="p">:</span> <span class="mi">850</span><span class="p">,</span>
-<span class="p">}</span>
+FICO_UPPER_BOUNDS: Dict[str, int] = {
+    &quot;Deep-Subprime&quot;: 579,
+    &quot;Subprime&quot;: 619,
+    &quot;Near-Prime&quot;: 659,
+    &quot;Prime&quot;: 719,
+    &quot;Super-Prime&quot;: 850,
+}
 
-<span class="n">MINOR_AGE_UPPER_BOUND</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">18</span>
+MINOR_AGE_UPPER_BOUND: int = 18
 
 
-<span class="k">class</span> <span class="nc">CustomerLabel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Create a customer label.</span>
+class CustomerLabel:
+    &quot;&quot;&quot;
+    Create a customer label.
 
-<span class="sd">    The customer label format is: &#39;Adult/Minor Credit_Rating New/Returning_Customer&#39;</span>
+    The customer label format is: 'Adult/Minor Credit_Rating New/Returning_Customer'
 
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    get_customer_label()</span>
-<span class="sd">         Return the formatted label.</span>
+    Methods
+    -------
+    get_customer_label()
+         Return the formatted label.
 
-<span class="sd">    Example</span>
-<span class="sd">    -------</span>
-<span class="sd">    &gt;&gt;&gt; customer_label = CustomerLabel(</span>
-<span class="sd">    ...     age=17,</span>
-<span class="sd">    ...     fico_score=550,</span>
-<span class="sd">    ...     is_previous_customer=False</span>
-<span class="sd">    ... ).get_customer_label()</span>
+    Example
+    -------
+    &gt;&gt;&gt; customer_label = CustomerLabel(
+    ...     age=17,
+    ...     fico_score=550,
+    ...     is_previous_customer=False
+    ... ).get_customer_label()
 
-<span class="sd">    &quot;&quot;&quot;</span>
+    &quot;&quot;&quot;
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fico_score</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">is_previous_customer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a customer label.</span>
+    def __init__(self, age: int, fico_score: int, is_previous_customer: bool):
+        &quot;&quot;&quot;
+        Create a customer label.
 
-<span class="sd">        Attributes</span>
-<span class="sd">        ----------</span>
-<span class="sd">        age : int</span>
-<span class="sd">            Age of the customer in years</span>
-<span class="sd">        fico_score : int</span>
-<span class="sd">            FICO score of the customer</span>
-<span class="sd">        is_previous_customer : bool</span>
-<span class="sd">            If the customer is a previous customer or not</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fico_score</span> <span class="o">=</span> <span class="n">fico_score</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_previous_customer</span> <span class="o">=</span> <span class="n">is_previous_customer</span>
+        Attributes
+        ----------
+        age : int
+            Age of the customer in years
+        fico_score : int
+            FICO score of the customer
+        is_previous_customer : bool
+            If the customer is a previous customer or not
+        &quot;&quot;&quot;
+        self.age = age
+        self.fico_score = fico_score
+        self.is_previous_customer = is_previous_customer
 
-    <span class="k">def</span> <span class="nf">_customer_age_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the customer&#39;s age label.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;Minor&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">&lt;</span> <span class="n">MINOR_AGE_UPPER_BOUND</span> <span class="k">else</span> <span class="s2">&quot;Adult&quot;</span>
+    def _customer_age_label(self) -&gt; str:
+        &quot;&quot;&quot;Calculate the customer's age label.&quot;&quot;&quot;
+        return &quot;Minor&quot; if self.age &lt; MINOR_AGE_UPPER_BOUND else &quot;Adult&quot;
 
-    <span class="k">def</span> <span class="nf">_credit_rating_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the label for credit rating given the FICO bounds.&quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">upper_bound</span> <span class="ow">in</span> <span class="n">FICO_UPPER_BOUNDS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fico_score</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">upper_bound</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">lbl</span>
+    def _credit_rating_label(self) -&gt; str:
+        &quot;&quot;&quot;Calculate the label for credit rating given the FICO bounds.&quot;&quot;&quot;
+        for lbl, upper_bound in FICO_UPPER_BOUNDS.items():
+            if self.fico_score &lt; int(upper_bound):
+                return lbl
 
-        <span class="c1"># TODO: Put a LOG here to make it known that a label was not returned correctly!</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        # TODO: Put a LOG here to make it known that a label was not returned correctly!
+        return &quot;&quot;
 
-    <span class="k">def</span> <span class="nf">_previous_customer_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return corresponding label for previous customer.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;Previous Customer&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_previous_customer</span> <span class="k">else</span> <span class="s2">&quot;New Customer&quot;</span>
+    def _previous_customer_label(self) -&gt; str:
+        &quot;&quot;&quot;Return corresponding label for previous customer.&quot;&quot;&quot;
+        return &quot;Previous Customer&quot; if self.is_previous_customer else &quot;New Customer&quot;
 
-    <span class="k">def</span> <span class="nf">get_customer_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate and returns a customer label.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_customer_age_label</span><span class="p">()</span><span class="si">}</span><span class="s2">: &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_credit_rating_label</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_previous_customer_label</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+    def get_customer_label(self) -&gt; str:
+        &quot;&quot;&quot;Generate and returns a customer label.&quot;&quot;&quot;
+        return (
+            f&quot;{self._customer_age_label()}: &quot;
+            f&quot;{self._credit_rating_label()} ({self._previous_customer_label()})&quot;
+        )
+</code></pre>
 
 <h2 id="are-i-done">Are I Done?</h2>
 <p>The code looks clean, has docstrings and an example, and doesn't have any obvious code smells.  There is a TODO that I left, which should be converted to a ticket so that I don't forget about it — but, at least, I ought to note it in the code.  Most text editors will be able to show you the "TODO" items you have in your code and it's good to go over these every so often.</p>

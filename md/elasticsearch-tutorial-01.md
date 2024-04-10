@@ -18,7 +18,7 @@ Huh, neat.  Full-text keyword searches is what I generally think of when I see E
 
 ## Setting Things up for the Tutorial
 
-Since I'm using docker compose to run my local elastisearch toy, I need to increase our Docker memory limit in WSL to 4GB, as per [this note](https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_configure_and_start_the_cluster).  The rest is easy: copy their `.env` and `docker-compose.yaml` file (on the same page as the note) and `docker compose up`.  After a few seconds I'm off to the races.
+Since I'm using docker compose to run my local Elastisearch toy, I need to increase our Docker memory limit in WSL to 4GB, as per [this note](https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_configure_and_start_the_cluster).  The rest is easy: copy their `.env` and `docker-compose.yaml` file (on the same page as the note) and `docker compose up`.  After a few seconds I'm off to the races.
 
 ## The Starter Application
 
@@ -205,7 +205,7 @@ Which returns the following:
 
 It looks like our fields are in `my_documents > mappings > properties`.  I'm not sure what the "keyword" property is, but it did get the date field right and everything else looks okay.  Let's move on.
 
-The tutorial tells us that, while I _can_ ingest documents this way, realistically I will want to use the `bulk` method to ingrest a bunch of documents at once.  Makes sense to me.  I'll plop it in the `Search` class:
+The tutorial tells us that, while I _can_ ingest documents this way, realistically I will want to use the `bulk` method to ingest a bunch of documents at once.  Makes sense to me.  I'll plop it in the `Search` class:
 
 ```python
 class Search:

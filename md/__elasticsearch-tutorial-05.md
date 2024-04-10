@@ -9,7 +9,7 @@ These will be a continuation of notes from doing the [elasticsearch tutorial](ht
 
 This time I'll be going through the [chatbot tutorial](https://www.elastic.co/search-labs/tutorials/chatbot-tutorial/chatbot-rag-app/setup).
 
-## Preperation
+## Preparation
 
 The first few pages of the chatbot tutorial tells me to download the repo (`git clone https://github.com/elastic/elasticsearch-labs`), make a virtual env for python, (`python3 -m venv .venv; source .venv/bin/activate;`) and install the packages (`pip install -r requirements.txt`).  Nothing wild so far!
 
@@ -31,7 +31,7 @@ Huh.  That's a new one.  I found [this answer](https://github.com/orgs/community
     <figcaption>Oh come on!</figcaption>
 </figure>
 
-As I was writing up this part of the blog I tried one last time and finally &mdash; finally! &mdash it finished and I had a shallow clone of the repo!  That ends that mini-advnture.  Surely, installing the Python packages will go smoother &mdash;
+As I was writing up this part of the blog I tried one last time and finally &mdash; finally! &mdash it finished and I had a shallow clone of the repo!  That ends that mini-adventure.  Surely, installing the Python packages will go smoother &mdash;
 
 It did.  Whew.  I copy the `.env.example` to `.env` start my docker compose ES clusters.  Luckily, I had already downloaded these before I came to the coffee shop since otherwise there's no way that would `docker pull` in less than an hour and I'd have to give up until I went home.
 
@@ -104,7 +104,7 @@ Okay, so it's not going to tiktok, that's good to know.  I'm chunking up documen
 
 The ES Sparse Vector storage is then created, and I will have to fiddle with that so we can have something local to store them if possible.  Next, the code creates an index from our documents.
 
-In the `api` folder I see a few important files.  `llm_integrations.py` connects to openai, or the various other chat AI providers (vertex, azure, etc.), and all of the inits look reasonable and approximately the same.  The `elasticsearch_client.py` is appropriately named: it passes our ES client into `ElasticsearchChatMessageHistory` which, according to the [langchain docs](https://python.langchain.com/docs/integrations/memory/elasticsearch_chat_message_history#initialize-elasticsearch-client-and-chat-message-history) is the way langchain is able to read chat history with ES.  
+In the `api` folder I see a few important files.  `llm_integrations.py` connects to OpenAI, or the various other chat AI providers (vertex, azure, etc.), and all of the inits look reasonable and approximately the same.  The `elasticsearch_client.py` is appropriately named: it passes our ES client into `ElasticsearchChatMessageHistory` which, according to the [langchain docs](https://python.langchain.com/docs/integrations/memory/elasticsearch_chat_message_history#initialize-elasticsearch-client-and-chat-message-history) is the way langchain is able to read chat history with ES.  
 
 Two files left: `chat.py` and `app.py`.  The `chat.py` file, which I'll probably look at a bit harder later because it seems like it's doing some heavy lifting to convert the question from the user into something usable, but the tl;dr of the file is, "Takes questions, splits out answers."  
 
@@ -148,7 +148,7 @@ Oh, well, sure.  That makes sense.  While looking this up, I see that I need a c
 
 I run into a snag here.  I can't figure out what model id I should be using, and doing a `get` for the model ids only gives me a single id for an unrelated model.  I'm worried that I _do_ need a subscription.
 
-TODO: I gott'a figure this out!
+TODO: I gotta figure this out!
 
 
 
