@@ -27,23 +27,24 @@
 <p>Last Updated: <em>2023-06-06</em></p>
 <hr />
 <h2 id="introduction">Introduction</h2>
-<p>Sklearn's <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html">pipelines</a> are an elegant way to organize modeling workflows.  It also provides an "at-a-glance" picture of what is going into the current model &mdash; something your future self will thank you for when you read that notebook back in six months and have no idea what anything is doing.</p>
-<h2 id="getting-toy-data-to-play-with">Getting Toy Data To Play With</h2>
-<p>I'll be working with the cute <a href="https://github.com/allisonhorst/palmerpenguins">Penguins</a> dataset which <strong>seaborn</strong> can load.  The "goal" of my classifier: try to predict the sex of the penguin, given the rest of the features.  <strong>This model will purposely be simplistic: it will serve only to help explain how to set up pipelines.</strong></p>
+<p>Sklearn's <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html">pipelines</a> are an elegant way to organize modeling workflows.  It provides an at-a-glance picture of what happens to what data as it moves through modeling &mdash; something your future self will thank you for when you need to read your notebook again in six months.</p>
+<p>I'll be working with the cute <a href="https://github.com/allisonhorst/palmerpenguins">Penguins</a> dataset which can be loaded through <strong>seaborn</strong>.  The "goal" of my classifier: try to predict the sex of the penguin given the rest of the features.  <strong>This model will purposely be simplistic: its main purpose is to help explain how to set up pipelines.</strong></p>
 <h2 id="loading-the-data">Loading the Data</h2>
-<p>I made a CSV of the data and a script to load it.  <strong>In this post, I've opted to use <a href="https://pola.rs/">Polars</a> over <a href="https://pandas.pydata.org/docs/index.html">Pandas</a>.</strong>  </p>
+<p>I make a CSV of the data and a script to load it.  <strong>In this post, I've opted to use <a href="https://pola.rs/">Polars</a> over <a href="https://pandas.pydata.org/docs/index.html">Pandas</a>.</strong>  </p>
 <div class="admonition note">
 <p class="admonition-title">Pandas?</p>
-<p>If you prefer <a href="https://pandas.pydata.org/docs/index.html">Pandas</a> there should only be changes required for this next code block, but all the code after this code block should work without changes.</p>
+<p>If you prefer <a href="https://pandas.pydata.org/docs/index.html">Pandas</a> there should only be changes required for this next code block, but all the code after this code block should work without changes.  <a href="https://blog.jetbrains.com/dataspell/2023/08/polars-vs-pandas-what-s-the-difference/#why-use-polars-over-pandas?">Why change from Pandas to Polars?</a></p>
 </div>
 <pre class="codehilite"><code class="language-python linenums">import polars as pl
+from seaborn import load_dataset
 from sklearn.model_selection import train_test_split
 
-df = pl.read_csv(&quot;./datasets/penguins.csv&quot;, null_values=[&quot;NA&quot;], dtypes={&quot;year&quot;: str})
-df = df.drop_nulls(subset=[&quot;sex&quot;])
+
+df = pl.from_pandas(load_dataset(&quot;penguins&quot;))  # Seaborn does not support to-polars yet.
+df = df.drop_nulls(subset=[&quot;sex&quot;])  # Predicting on sex, so drop rows that don't include it.
 
 x = df.drop(&quot;sex&quot;)
-y = df.select((pl.col(&quot;sex&quot;) == &quot;male&quot;).alias(&quot;target&quot;).cast(int))
+y = df.select((pl.col(&quot;sex&quot;) == &quot;Male&quot;).cast(int).alias(&quot;target&quot;))
 
 # A weird quirk for sklearn.
 y = y.to_numpy().ravel()
@@ -53,21 +54,20 @@ x_train, x_test, y_train, y_test = train_test_split(
 )
 </code></pre>
 
-<p>The file contains null values of the form "NA" so I set <code>null_values=["NA"]</code> to make Polars understand that those are nulls.  Additionally, Polars will think that a year is an <code>int</code> but I want it as a categorical so we set the dtype to be <code>str</code>.  Since I'm predicting on <strong>sex</strong>, I'm going to drop any rows that have a null in that column since they won't give me any new predictive information.</p>
-<p>I define <code>x</code> and <code>y</code> in the next few lines.  The <code>df.select(...)</code> part is a bit strange if you haven't seen it before, so let me go through it:</p>
+<p>If you haven't seen polars before, the <code>df.select(...)</code> part looks a bit strange.  I'll go through it in more detail:</p>
 <ol>
 <li><code>pl.col("sex")</code> picks out the <strong>sex</strong> column,</li>
-<li><code>pl.col("sex") == "male"</code> compares the column to the string <code>"male"</code>, resulting in a column which is either <code>True</code> or <code>False</code>,</li>
-<li><code>.alias("target")</code> gives the name <strong>target</strong> to this new boolean column,</li>
-<li><code>.cast(int)</code> casts the new <strong>target</strong> column as an <code>int</code> column (<code>True</code> goes to <code>1</code>, <code>False</code> goes to <code>0</code>),</li>
+<li><code>pl.col("sex") == "Male"</code> compares the column to the string <code>"Male"</code>, resulting in a column (actually, a <code>polars.dataframe.frame.DataFrame</code> with one column) which is <code>bool</code>-type (either <code>true</code> or <code>false</code>),</li>
+<li><code>.cast(int)</code> takes the <code>bool</code>-type column and casts it as an <code>int</code> column (<code>true</code> goes to <code>1</code>, <code>false</code> goes to <code>0</code>),</li>
+<li><code>.alias("target")</code> gives the name <strong>target</strong> to the new <code>int</code> column,</li>
 <li><code>df.select(...)</code> wraps around the whole thing to say, "I'm working with <code>df</code>, and we're going to do something with the columns of this dataframe.`  See <a href="https://docs.pola.rs/py-polars/html/reference/dataframe/api/polars.DataFrame.select.html">the docs</a> for a bit more detail on this and some examples.</li>
 </ol>
-<p>This might seem a bit more complicated compared to the Pandas version, which goes something like <code>(df["sex"] == "male").astype(int)</code> but as the number or complexity of derived columns increases I find that Polars is much more readable.</p>
-<p>Either way, looking at the next part, what the heck is this?</p>
+<p>The corresponding Pandas version for creating the <code>target</code> column, if you're following along that way, goes something like <code>(df[["sex"]] == "Male").rename(columns={"sex": "target"}).astype(int)</code>. It's roughly the same as the Polars version but I find the latter more readable as the complexity grows.</p>
+<p>Either way, looking at the next line, what the heck is this:</p>
 <pre class="codehilite"><code class="language-python linenums">y = y.to_numpy().ravel()
 </code></pre>
 
-<p>I do this because during the fitting process later, sklearn will require my target values to be a 1D array.  Currently, it is a Polars Series, which, when I make it into a <em>numpy</em> array will become a <code>(num_rows, 1)</code> ndarray.  Sklearn requires this be <code>(num_rows,)</code> &mdash; that is, a flat array &mdash; which I can get using <code>.ravel()</code>.  It's weird but it makes sense if you look at the underlying arrays (pre- and post-ravel). </p>
+<p>Much later in the fitting process, sklearn will require my target values to be a flat 1D array.  Isn't my <code>target</code> column already a 1D array if I call <code>y.to_numpy()</code> on it?  Surely, this will give me a flat 1D array!  Alas: <em>No</em>, it will convert our Polars Series into an <code>ndarray</code> of shape <code>(num_rows, 1)</code>: this is a 1D array which looks roughly like <code>[[1], [0], [1], [1], ...]</code> and sklearn requires it to look like <code>[1, 0, 1, 1, ...]</code>.  Using <code>.ravel()</code> on the former series gives me the latter series and sklearn will be happy.  Since this isn't a post on what sklearn does and doesn't like, don't worry if this seems weird &mdash; because it is weird.</p>
 <p>Last, I do a train-test split.</p>
 <pre class="codehilite"><code class="language-python linenums">x_train, x_test, y_train, y_test = train_test_split(
     x, y, test_size=0.33, random_state=1234
@@ -104,7 +104,7 @@ col_transformer = ColumnTransformer(
 col_transformer.fit(x_train, y_train)
 </code></pre>
 
-<p>This is the gist of how pipelines work: pick columns to apply the transforms to, make a pipeline to list the transformers to apply, and then apply all the pipelines using the (I think) awkwardly named <code>ColumnTransformer</code>.  It's going to look like a lot, but all I'm doing is filling out the above with a few standard transformers.  Right now, you don't need to know what these transformers even <em>do</em>, so long as you know they <em>do something</em>.</p>
+<p>In Python, this looks something like:</p>
 <pre class="codehilite"><code class="language-python linenums">from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
@@ -119,7 +119,7 @@ pipeline_numeric = Pipeline(
     ]
 )
 
-cols_categorical = [&quot;species&quot;, &quot;island&quot;, &quot;year&quot;]
+cols_categorical = [&quot;species&quot;, &quot;island&quot;]
 pipeline_categorical = Pipeline(
     [
         (&quot;impute_w_most_frequent&quot;, SimpleImputer(strategy=&quot;most_frequent&quot;)),
@@ -143,31 +143,31 @@ print(preprocessing_transformer.get_feature_names_out(), end=&quot;\n\n&quot;)
 print(preprocessing_transformer.fit_transform(x_train, y_train))
 </code></pre>
 
-<p>At the end, I printed the values:</p>
+<p>Take a second to look over this and piece together what's happening.  I'm applying different transformations to my numeric columns (<code>cols_numeric</code>) than my categorical columns (<code>cols_categorical</code>) and we can see which columns go with which transforms by looking at the <code>ColumnTransformer</code> input.  Calling <code>.fit</code> on the <code>ColumnTransformer</code> will apply each pipeline to its respective columns.</p>
+<p>At the end of this script, I printed the values so I can see what I get:</p>
 <pre class="codehilite"><code class="language-text linenums">['numeric__bill_length_mm' 'numeric__bill_depth_mm'
  'numeric__flipper_length_mm' 'numeric__body_mass_g'
  'categorical__species_Adelie' 'categorical__species_Chinstrap'
  'categorical__species_Gentoo' 'categorical__island_Biscoe'
  'categorical__island_Dream' 'categorical__island_Torgersen'
- 'categorical__year_2007' 'categorical__year_2008'
- 'categorical__year_2009']
+]
 
 [[-1.00173392  0.34890155 -1.47813963 ...  1.          0.
-   0.        ]
+   1.        ]
  [ 0.00368887  0.08989674  1.22603896 ...  0.          1.
-   0.        ]
+   1.        ]
  [-0.4716019   1.17771697 -0.26837552 ...  0.          1.
-   0.        ]
+   1.        ]
  ...
  [ 1.53924369  1.48852275  0.22976264 ...  0.          1.
-   0.        ]
+   1.        ]
  [ 0.93599001 -0.47991386  1.9376649  ...  0.          1.
-   0.        ]
+   1.        ]
  [ 0.46069923 -0.27271    -0.69535109 ...  0.          1.
-   0.        ]]
+   1.        ]]
 </code></pre>
 
-<p>Great.  The <code>.fit_transform(...)</code> has given me the latter array which is ready to be popped into a model.  I'll do just that with a <code>RandomForestClassifier</code>, though any classifier would work for my purposes in this post.</p>
+<p>Great.  The <code>.fit_transform(...)</code> gives me an array that I can pop into a model.  I'll do that with a <code>RandomForestClassifier</code>, though any classifier would work for my purposes in this post:</p>
 <pre class="codehilite"><code class="language-python linenums">from sklearn.ensemble import RandomForestClassifier
 
 # Make a RF Classifier and pipeline it with the preprocessor.
@@ -181,32 +181,10 @@ preprocess_model_pipeline.fit(x_train, y_train)
 y_predicted = preprocess_model_pipeline.predict(x_test)
 </code></pre>
 
-<p>I've created another pipeline which includes the preprocessing (the thing I defined above) and our new classifier.  The raw data is processed first by the <code>preprocessing_transformer</code>, then spit out into the <code>rf_clf</code> RF Classifier.  One cool thing is that I don't need to keep <code>.fit</code>-ing everything, I can call <code>.fit(...)</code> on the pipeline and it'll push the data through!  Similarly, I can call <code>.predict(...)</code> on the pipeline and it will do what I expect: give me an array of predictions for my test values.</p>
-<h2 id="scoring-the-model">Scoring the Model</h2>
-<p>How did the model do?</p>
-<pre class="codehilite"><code class="language-python linenums">from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-
-scores = [
-    (&quot;accuracy&quot;, accuracy_score(y_test, y_predicted)),
-    (&quot;precision&quot;, precision_score(y_test, y_predicted)),
-    (&quot;recall&quot;, recall_score(y_test, y_predicted)),
-    (&quot;f1&quot;, f1_score(y_test, y_predicted)),
-]
-
-for score in scores:
-    print(score[0], &quot;:&quot;, round(score[1],4))
-</code></pre>
-
-<pre class="codehilite"><code class="language-text linenums">accuracy : 0.9
-precision : 0.8627
-recall : 0.9167
-f1 : 0.8889
-</code></pre>
-
-<p>Not <em>terrible</em> for some standard transformers and random forest classification!</p>
+<p>I've created another pipeline which includes the preprocessing and our new classifier.  The raw data is processed first by the <code>preprocessing_transformer</code>, then spit out into the <code>rf_clf</code> RF Classifier.  Notice that I can call <code>.fit</code> and <code>.predict</code> as a methods from the <em>pipeline</em> object and it will automatically do all the pipeline fitting and model predicting.</p>
 <h2 id="adding-to-pipelines">Adding to Pipelines</h2>
-<p>Besides keeping everything together, pipelines allow the modeler to see what's happening to the data at what stage and easily add new transformers to the flow.  For example, what if I wanted to use some other strategy with our <code>SimpleImputer</code>?  What if I wanted to add a second <code>Scaler</code> for some reason?  What if I wanted to add a <a href="https://scikit-learn.org/stable/modules/preprocessing.html#custom-transformers">custom transformer</a>?</p>
-<p>This becomes a matter of adding something onto a list.  If you've seen notebooks where transforms are peppered across multiple random cells in a Jupyter notebook (or, worse, in multiple Jupyter Notebooks!), then it's easy to appreciate how nice and clean this makes things.</p>
+<p>Besides keeping everything nice, tidy, and together, pipelines allow the modeler to see what's happening to the data at what stage and easily add new transformers to the flow.  For example, what if I wanted to use some other strategy with our <code>SimpleImputer</code>?  What if I wanted to add a second <code>Scaler</code> for some reason?  What if I wanted to add a <a href="https://scikit-learn.org/stable/modules/preprocessing.html#custom-transformers">custom transformer</a>?</p>
+<p>This becomes a matter of adding something onto a list.  If you've seen notebooks where transforms are peppered across multiple random cells in a Jupyter notebook (or, worse, in multiple Jupyter Notebooks!), then it's easy to appreciate how nice and clean this makes things.  Try pipelining out!</p>
 <p><em>Tidy is good.  Be tidy.</em></p>
     </div>
 </body>
