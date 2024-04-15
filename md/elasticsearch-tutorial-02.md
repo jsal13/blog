@@ -25,7 +25,7 @@ The tutorial defines the term **embedding** as
 
 > a vector (an array of numbers) that represents real-world objects such as words, sentences, images or videos.
 
-There'll no doubt be some examples soon if you haven't seen this kind of thing before.  One cool thing you can do with embeddings is define and then calculate **distances** between them.  This is done in a similar way as you might do in school:
+There'll no doubt be some examples soon if you haven't seen this kind of thing before.  One cool thing you can do with embeddings is define and then calculate **distances** between them:
 
 $$
 \begin{array}{ll}
@@ -35,7 +35,7 @@ d(A, B) &= \sqrt{(0 - 0)^2 + (0 - 1)^2 + (1 - 0)^2} = \sqrt{2}\\\\
 \end{array}
 $$
 
-For \\(d(A, B)\\) I used a Euclidean distance, but any [distance function](https://en.wikipedia.org/wiki/Distance#Mathematical_formalization) would work equally well.
+For \\(d(A, B)\\) I used [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance), but any [distance function](https://en.wikipedia.org/wiki/Distance#Mathematical_formalization) that works with vectors would work on embeddings.
 
 Why do I care about finding the distances between embeddings?  This might tell them if the two terms (or pictures, or videos, or whatever) are _similar_ to each other in some respect.
 
@@ -61,7 +61,7 @@ from sentence_transformers import SentenceTransformer
 model = SentenceTransformer("all-MiniLM-L6-v2")
 ```
 
-Running the code gives me a bunch of logs of things downloading which I assume must be the model, or something equally magical.  I'm now able to generate embeddings!
+Running the code gives me a bunch of logs of things downloading which I assume must be the model or something equally magical.  I'm now able to generate embeddings!
 
 ```python
 embedding = model.encode('The quick brown fox jumps over the lazy dog')
@@ -103,7 +103,7 @@ class Search:
         })
 ```
 
-Notice that the embedding type is _dense vector_.  I thought to myself: what _is_ a dense vector?  It turns out that this is the opposite of a _sparse vector_: whereas a sparse vector primarily consists of zero entries with only a few non-zero entries, a dense vector contains a large number of non-zero entries.  Given the vector above is mostly non-zero entries, it makes sense that this embedding will pop out dense vectors and, therefore, this embedding type makes sense for my index.
+Notice that the embedding type is _dense vector_.  I thought to myself: what _is_ a dense vector?  It turns out that this is the opposite of a _sparse vector_: whereas a sparse vector is nearly all zero entries with only a few non-zero entries, a dense vector contains a large number of non-zero entries.  Given the vector above is mostly non-zero entries, it makes sense that this embedding will pop out dense vectors and, therefore, this embedding type makes sense for my index.
 
 There's a few optional parameters that I can set if I want: `dims` (the dimension of the vector), `index` (vectors should be indexed for searching), and `similarity` (the distance function to use, where `cosine` and `dot_product` are the most common).
 
@@ -133,7 +133,7 @@ class Search:
         return self.es.bulk(operations=operations)
 ```
 
-I haven't mentioned this yet, but it does bother me that there are no type-hints in this code.  On one hand I understand it could be a bit distracting but on the other hand I like to know what types my parameters are.  It helps me understand the "flow" of the code.  Alas, life isn't fair sometimes.
+I haven't mentioned this yet, but it does bother me that there are no type-hints in this code.  On one hand I understand it could be a bit distracting but on the other hand I like to know what types my parameters are.  It helps me understand the "flow" of the code.  Alas, life isn't fair sometimes.  If I have time I'll go over it.
 
 ## k-Nearest Neighbor Search
 
@@ -149,7 +149,7 @@ Luckily, ES is going to do the work for me.  By default, ES will use [cosine sim
 
 ## Hybrid Search
 
-This section talks about [Reciprocal Rank Fusion](https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html).  Seems like a fancy polling-type thing where a few different result sets can be compared.  The algorithm is surprisingly simple:
+This section talks about [Reciprocal Rank Fusion](https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html).  Seems like a fancy polling-type thing where a few different result sets can be compared.  The algorithm is straight-forward to write up:
 
 ```python
 score = 0.0
@@ -168,7 +168,7 @@ return score
 
 I don't have a great image in my head of what this does or why it works yet but popping in a few numbers convinces me it's at least directionally reasonable.
 
-The way to use this is remarkably easy.  Check out [[this GET payload](https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html#rrf-api)] example:
+The way to use this is remarkably easy.  Check out [this GET payload](https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html#rrf-api) example:
 
 ```json
 {
@@ -198,6 +198,6 @@ Text search, kNN, and RRF all working together like one big happy family.  Cool 
 
 ## Next Time
 
-I didn't do much "hands on" work this time since the kNN + RRF were quite similar to the full-text search in terms of the API and it was a bit more boring than I thought to bulk upload a bunch of sample embeddings and see which were close to one-another.  I'm sure if I had a better dataset than "random phrases I thought of" it would be neat.  Maybe in the last part of this series I'll find a nice dataset and answer some questions in it.
+I didn't do much "hands on" work this time since the kNN + RRF were quite similar to the full-text search in terms of the API and it was a bit more boring than I thought to bulk upload a bunch of sample embeddings and see which were close to one-another.  I'm sure if I had a better dataset than "random phrases I thought of" it would be neat.
 
 The "Vector Search" part of the ES tutorial ends here.  In the next post I'll cover the next part of the tutorial: Semantic Search.  This is the part with that ELSER Model, so I'll finally get to learn what the acronym stands for!

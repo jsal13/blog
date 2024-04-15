@@ -41,7 +41,7 @@
 <p>Since I'm using docker compose to run my local Elastisearch toy, I need to increase our Docker memory limit in WSL to 4GB, as per <a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_configure_and_start_the_cluster">this note</a>.  The rest is easy: copy their <code>.env</code> and <code>docker-compose.yaml</code> file (on the same page as the note) and <code>docker compose up</code>.  After a few seconds I'm off to the races.</p>
 <h2 id="the-starter-application">The Starter Application</h2>
 <p>This tutorial has a pre-written <a href="https://www.elastic.co/search-labs/tutorials/search-tutorial/starter-project">Starter Application</a>, which means that I'm going to have to look through and investigate what this application does before I move on.  I might not wind up needing it.</p>
-<p>It's a flask app which appears to function as a frontend for querying and getting results.  Since it's not something that I'm ever going to use after the tutorial I'm going to ignore most of it and run my own scripts instead.  However, they included a <strong>JSON of sample data</strong> where each record looks like this:</p>
+<p>It's a flask app which appears to function as a frontend for querying and getting results.  Since it's not something that I'm ever going to use after the tutorial I'm going to ignore most of it and run my own scripts instead.  However, they've included a <strong>JSON of sample data</strong> where each record looks like this:</p>
 <pre class="codehilite"><code class="language-json linenums">{
   &quot;content&quot;: &quot;Effective: March 2020\nPurpose\n\n...&quot;,
   &quot;name&quot;: &quot;Work From Home Policy&quot;,
@@ -260,7 +260,7 @@ es.insert_documents(documents=documents)
 )
 </code></pre>
 
-<p>Running this returns a whole big JSON of things; the "hits" portion gives me what I want to see:</p>
+<p>Running this returns a whole big JSON of things; the "hits" key gives me what I want to see:</p>
 <pre class="codehilite"><code class="language-json linenums">&quot;hits&quot;: {
   &quot;total&quot;: {
     &quot;value&quot;: 0, &quot;relation&quot;: &quot;eq&quot;
@@ -293,7 +293,6 @@ es.insert_documents(documents=documents)
 }
 </code></pre>
 
-<p>The Python equivalent is how I expected it to look, similar to our above match query.</p>
 <h2 id="pagination">Pagination</h2>
 <p>Everyone's <em>favorite</em>: pagination.  Frustrating to keep track of, annoying when it errors out.  Luckily, it's not too bad here:</p>
 <pre class="codehilite"><code class="language-python linenums">results = es.search(
@@ -306,8 +305,7 @@ es.insert_documents(documents=documents)
 )
 </code></pre>
 
-<p>Similar to how I'd expect it, with the exception of the underscore in <code>from_</code>.</p>
-<p>Not much else going on here, so I'll move on.</p>
+<p>Notice the underscore at the end of <code>from_</code>.  Otherwise not much else going on here, so I'll move on.</p>
 <h2 id="boolean-queries-and-filtering">Boolean Queries and Filtering</h2>
 <p>The structure of the booleans, even after reading the tutorial page, was a bit fuzzy to me.  I looked up <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html">an example</a> which gives the gist of it:</p>
 <pre class="codehilite"><code class="language-json linenums">{

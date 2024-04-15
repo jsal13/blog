@@ -24,7 +24,7 @@ Since I'm using docker compose to run my local Elastisearch toy, I need to incre
 
 This tutorial has a pre-written [Starter Application](https://www.elastic.co/search-labs/tutorials/search-tutorial/starter-project), which means that I'm going to have to look through and investigate what this application does before I move on.  I might not wind up needing it.
 
-It's a flask app which appears to function as a frontend for querying and getting results.  Since it's not something that I'm ever going to use after the tutorial I'm going to ignore most of it and run my own scripts instead.  However, they included a **JSON of sample data** where each record looks like this:
+It's a flask app which appears to function as a frontend for querying and getting results.  Since it's not something that I'm ever going to use after the tutorial I'm going to ignore most of it and run my own scripts instead.  However, they've included a **JSON of sample data** where each record looks like this:
 
 ```json
 {
@@ -283,7 +283,7 @@ es.search(
 )
 ```
 
-Running this returns a whole big JSON of things; the "hits" portion gives me what I want to see:
+Running this returns a whole big JSON of things; the "hits" key gives me what I want to see:
 
 ```json
 "hits": {
@@ -323,8 +323,6 @@ There is also a way to match queries in different fields called _multi\_match_. 
 }
 ```
 
-The Python equivalent is how I expected it to look, similar to our above match query.
-
 ## Pagination
 
 Everyone's _favorite_: pagination.  Frustrating to keep track of, annoying when it errors out.  Luckily, it's not too bad here:
@@ -340,9 +338,7 @@ results = es.search(
 )
 ```
 
-Similar to how I'd expect it, with the exception of the underscore in `from_`.
-
-Not much else going on here, so I'll move on.
+Notice the underscore at the end of `from_`.  Otherwise not much else going on here, so I'll move on.
 
 ## Boolean Queries and Filtering
 
