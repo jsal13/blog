@@ -89,6 +89,7 @@ class Converter:
                 template.read()
                 .replace(r"{{ content }}", toc_str)
                 .replace(r"{{ title }}", "Blog")
+                .replace(r"../css", r"./css")
                 .replace(
                     r"{{ title_matter }}",
                     "<h1>jsalv neat things</h1>\n\n<p>Links & whatnot to things that seem pretty cool.</p>",
