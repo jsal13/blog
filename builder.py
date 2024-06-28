@@ -41,7 +41,8 @@ class Converter:
             # REF: https://python-markdown.github.io/extensions/code_hilite/#setup
             source_content = source.read()
             title = re.findall("^# (.*)", source_content)[0]
-            _id = re.findall("<!-- ID: (\d+) -->", source_content)[0]
+            # _id = re.findall("<!-- ID: (\d+) -->", source_content)[0]
+            _id = source_path_obj.name
             html_body = markdown.markdown(
                 source_content,
                 extensions=EXTENSIONS,
@@ -88,7 +89,10 @@ class Converter:
                 template.read()
                 .replace(r"{{ content }}", toc_str)
                 .replace(r"{{ title }}", "Blog")
-                .replace(r"{{ title_matter }}", "<h1>JSalv Blog Posts</h1>")
+                .replace(
+                    r"{{ title_matter }}",
+                    "<h1>jsalv neat things</h1>\n\n<p>Links & whatnot to things that seem pretty cool.</p>",
+                )
             )
             dest.write(html)
 
