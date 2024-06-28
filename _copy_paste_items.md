@@ -19,12 +19,10 @@ for i in range(10):
     <figcaption>Caption!</figcaption>
 </figure>
 
-
 <!-- NOTES, WARNING, ETC. -->
 !!! note "Pandas?"
 
     The note goes here!
-
 
 <!-- BLOCKQUOTES -->
 

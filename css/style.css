@@ -3,6 +3,13 @@
     margin-left: 1rem;
 }
 
+body {
+    font-family: "Lora", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
 blockquote {
     background: #eff3fd;
     border-left: 6px solid #ccc;
