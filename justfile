@@ -11,8 +11,8 @@ venv:
     && source .venv/bin/activate \
     && pip install --upgrade pip \
     && pip install uv \
-    && uv pip install -r requirements.txt \
-    && pre-commit install
+    && uv pip install -r requirements.txt
+  pre-commit install
 
 build:
     @python builder.py
