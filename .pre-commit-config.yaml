@@ -1,0 +1,8 @@
+repos:
+    - repo: local
+      hooks:
+          - id: build-md-files
+            name: build-md-files
+            entry: just build
+            language: script
+            pass_filenames: false
