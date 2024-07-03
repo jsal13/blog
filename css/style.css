@@ -10,6 +10,10 @@
     font-style: normal;
 } */
 
+body {
+    line-height: 1.2em;
+}
+
 blockquote {
     background: #eff3fd;
     border-left: 6px solid #ccc;
