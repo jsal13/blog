@@ -81,8 +81,21 @@ Python :: 🐍
 <p>🐍 <a href="https://realpython.com/quizzes/python-type-checking/">Python Type Checking Quiz</a>: I learned a few things from this.  Always be using type hints.</p>
 </li>
 <li>
-<p><a href="https://labs.quansight.org/blog/convoluted-story-behind-topk">The convoluted story behind <code>np.top_k</code> @ Quantsight</a> Jules Poon describes their journey contributing to NumPy.  It's an interesting look behind the scenes at open source contribution!</p>
+<p>🐍 <a href="https://labs.quansight.org/blog/convoluted-story-behind-topk">The convoluted story behind <code>np.top_k</code> @ Quantsight</a>:  Jules Poon describes their journey contributing to NumPy.  It's an interesting look behind the scenes at open source contribution!</p>
 </li>
+<li>
+<p>🎸 <a href="https://www.stereogum.com/2271441/the-beaches-takes-one-to-know-one/music/">The Beaches – "Takes One To Know One"</a>: This song has been stuck in my head for a few days.</p>
+</li>
+<li>
+<p>🐍 <a href="https://labs.quansight.org/blog/free-threaded-python-rollout">Free-threaded CPython is ready to experiment with! @ Quantsight</a>: The <a href="https://en.wikipedia.org/wiki/Global_interpreter_lock">GIL</a>, the bane of some Python dev's existence, is becoming <a href="https://peps.python.org/pep-0703/">optional</a>.  From PEP-703:</p>
+</li>
+</ul>
+<blockquote>
+<p>The GIL is a major obstacle to concurrency. For scientific computing tasks, this lack of concurrency is often a bigger issue than speed of executing Python code, since most of the processor cycles are spent in optimized CPU or GPU kernels. The GIL introduces a global bottleneck that can prevent other threads from making progress if they call any Python code.</p>
+</blockquote>
+<p>From the article, looks like the major hurdles are to try to get C-related stuff to play nice.  It will be nice having this option since, as the article notes, CPUs are currently better at scaling horizontally (more cores) than vertically (better, faster cores).</p>
+<ul>
+<li>🐍 <a href="https://www.stuartellis.name/articles/python-modern-practices/">Modern Good Practices for Python Development</a>: A non-exaustive, opinionated list of best practices for Python dev.  The only one I felt was surprising was to use an <a href="https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/">src layout over a flat layout</a>.  I've honestly never thought about it and didn't know there <em>was</em> a reason to use one over the other.</li>
 </ul>
     </div>
 </body>
