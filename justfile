@@ -15,7 +15,7 @@ venv:
   pre-commit install
 
 build:
-    @python builder.py
+    @python src/builder.py
 
 # https://pygments.org/styles/
 generate-CSS:
