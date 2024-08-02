@@ -116,7 +116,7 @@ class Converter:
                 """
                 <!-- RSS -->
                 <link rel=alternate title="JSalv Blog"
-                type=application/atom+xml href="/feed.atom">
+                type=application/atom+xml href="feed.atom">
                 """,
             ),
         ]
