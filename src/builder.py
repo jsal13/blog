@@ -86,7 +86,14 @@ class Converter:
         # Sort posts by post_id value, smallest last.
         self.post_info.sort(key=lambda x: x.post_id, reverse=True)
         for post_obj in self.post_info:
-            toc.append(f"<li><a href='{post_obj.dest_path}'>{post_obj.title}</a></li>")
+            toc.append(
+                f"""
+                <li class='index-page'>
+                <a href='{post_obj.dest_path}'>
+                {post_obj.title}</a>
+                </li>
+                """
+            )
 
         toc_str: str = "<ul>\n" + "\n".join(toc) + "\n</ul>"
 

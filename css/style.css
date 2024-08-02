@@ -29,6 +29,10 @@ li {
     margin-bottom: 1.5rem;
 }
 
+li.index-page {
+    margin-bottom: 0;
+}
+
 img {
     display: block;
     max-width: 600px;
