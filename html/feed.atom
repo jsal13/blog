@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>JSalv Blog</title>
+    <id>https://jsalv.com/</id>
+    <link rel="alternate" href="https://jsalv.com/" />
+    <link rel="self" href="https://jsalv.com/blog/" />
+    <!-- Update this each time we update a post. -->
+    <updated>2024-08-02T00:00:00-06:00</updated>
+    <author>
+        <name>James Salvatore</name>
+    </author>
+    <entry>
+        <title>July 2024 Aggregated</title>
+        <link rel="alternate" type="text/html" href="{{ENTRY.HTML_URL}}" />
+        <id>https://jsalv.com/blog/html/2024_07.html</id>
+        <published>2024-08-02T00:00:00-06:00</published>
+        <updated>2024-08-02T00:00:00-06:00</updated>
+        <content type="html">
+            <div id="post-content">
+                <h1 id="july-2024">July 2024</h1>
+                <p>In the last year I've gotten back into RSS feeds as a news aggregator.
+                    Sometimes I want to share things. Here's a monthly aggregate of my
+                    favorite stuff. I hope you find something cool!</p>
+                <h2 id="links">Links</h2>
+                <!-- 
+Music :: 🎸
+Data :: 📊
+General Software :: 💻
+Papers :: 📝
+Math :: ✏️
+Dance :: 💃
+Python :: 🐍
+ -->
+
+                <ul>
+                    <li>
+                        <p>🎸 <a href="https://youtu.be/_LBMgiJQelA?si=fOLKG1r7a8l0_EHU">Juliaplaysgroove's
+                            Bass Cover of "Good Luck, Babe!" by Chappell Roan</a>: Polish bassist,
+                            youtube superstar, and general bad-ass Julia Przybysz picks up her
+                            fretless and covers that one song that you heard at least twenty times
+                            during the Pride Parade. Love it.</p>
+                    </li>
+                    <li>
+                        <p>✏️ <a href="https://en.wikipedia.org/wiki/Modus_tollens">Modus
+                                Tollens</a></p>
+                        <p>I was editing a story someone had written and there was a
+                            back-and-forth like this:</p>
+                        <blockquote>
+                            <p>"If a great carpenter builds a house it will never collapse."</p>
+                            <p>"But our house is completely demolished!"</p>
+                            <p>"Right. I'm not a great carpenter."</p>
+                        </blockquote>
+                        <p>I remembered a long time ago taking a logic class where we did rules of
+                            inference; this line closely resembles <em>Modus
+                                Tollens</em> ("<em>modus tollendo tollens</em>": "method of removing
+                            by taking away"). The formal statement of <em>modus
+                                tollens</em> is $$P\to Q,\neg P\therefore \neg Q$$.</p>
+                        <p>One example closer to the actual rule is something like: "If Anne
+                            is with Beth, Anne will be happy. Anne is not happy. It must be
+                            the case that Anne is not with Beth." Poor Anne.</p>
+                    </li>
+                    <li>
+                        <p>💻 <a
+                                href="https://sansec.io/research/polyfill-supply-chain-attack">The
+                            Polyfill Issue</a></p>
+                        <p>When I have an app or a site I always want to get to "inbox zero" on
+                            warnings and errors. I noticed when trying to tweak Mathjax (a Math
+                            symbol rendering library for browsers which made the P-&gt;Q thing in
+                            the previous link) I was getting a "cdn.polyfill.io name not resolved"
+                            issue. <em>Curious</em>, I thought, <em>but I have no idea what polyfill
+                            even</em> is. </p>
+                        <p>I googled it and found that, in February 2024, the cdn.polyfill.io domain
+                            and github account were sold to a Chinese company; on June 25, 2024,
+                            cdn.polyfill.io began injecting malware into polyfill.js. Mathjax had
+                            included using polyfill in copy+paste examples in their documentation
+                            but decided to <a
+                                href="https://github.com/mathjax/MathJax-docs/issues/334">simply
+                            remove it with no replacement</a> as nearly all browsers already support
+                            ES6 and that was all that they were using polyfill for. <strong>tl;dr:
+                            If your website uses polyfill it's probably best to remove it or use a <a
+                                    href="https://community.fastly.com/t/new-options-for-polyfill-io-users/2540">safe
+                            alternative</a></strong>.</p>
+                    </li>
+                    <li>
+                        <p>💻 <a
+                                href="https://anarc.at/blog/2024-05-29-playing-with-fonts-again/">Playing
+                            with fonts again @ Anarc.at</a>: A tiny dive into some font things.</p>
+                    </li>
+                    <li>
+                        <p>📊🐍 <a
+                                href="https://blog.jetbrains.com/pycharm/2024/06/how-to-move-from-pandas-to-polars/">How
+                            to Move From pandas to Polars @ Jetbrains</a>: a guest post by Cheuk
+                            Ting Ho on how to migrate from pandas to Polars. <strong>If
+                                you haven't tried out Polars and you're a pandas user, check
+                                this noise out.</strong> I switched over a few months ago and have
+                            found it to be much faster and much less annoying to use (looking at
+                            you, pandas indexing).</p>
+                    </li>
+                    <li>
+                        <p>📊 <a
+                                href="https://towardsdatascience.com/the-meaning-of-explainability-for-ai-d8ae809c97fa">The
+                            Meaning of Explainability for AI</a>: Explainability in AI, posted by
+                            the ever-interesting data science pro, Stephanie Kirmer.</p>
+                    </li>
+                    <li>
+                        <p>💃 <a href="https://www.youtube.com/watch?v=o0axUoy4wbQ">Jerome
+                                Robbins' The Concert: Mistake Waltz</a>: (3 mins) Watched this for a
+                            comedy Burlesque class --- it's about how it's okay to make errors and
+                            you can easily turn this into a nice thing by either making it a "wink"
+                            to the audience or by doubling down. Neat stuff.</p>
+                    </li>
+                    <li>
+                        <p>💃 <a href="https://youtu.be/9qrjLpkXjoI?si=2y3pMvzMu3dFtN1B">Queen
+                                of Hearts in Alice's Adventures in Wonderland (Comedic Ballet)</a>:
+                            The Queen of Hearts (played by <a
+                                href="https://en.wikipedia.org/wiki/Zenaida_Yanowsky">Zenaida
+                            Yanowsky</a>) showing off how a high status character can be bumbling
+                            and silly while still maintaining high status in the scene.</p>
+                    </li>
+                    <li>
+                        <p>🎸 <a
+                                href="https://www.stereogum.com/2270935/ice-nine-kills-reel-big-fish-share-metalcore-ska-cover-of-walking-on-sunshine-for-american-psycho-comic-book/music/">Ice
+                            Nine Kills &amp; Reel Big Fish Share Metalcore-Ska Cover Of
+                                “Walking On Sunshine” For American Psycho Comic Book</a>: Yeah, it's
+                            exactly what it sounds like.</p>
+                    </li>
+                    <li>
+                        <p>🐍 <a href="https://realpython.com/quizzes/python-type-checking/">Python
+                            Type Checking Quiz</a>: I learned a few things from this. Always be
+                            using type hints.</p>
+                    </li>
+                    <li>
+                        <p>🐍 <a
+                                href="https://labs.quansight.org/blog/convoluted-story-behind-topk">The
+                            convoluted story behind <code>np.top_k</code> @ Quantsight</a>: Jules
+                            Poon describes their journey contributing to NumPy. It's an interesting
+                            look behind the scenes at open source contribution!</p>
+                    </li>
+                    <li>
+                        <p>🎸 <a
+                                href="https://www.stereogum.com/2271441/the-beaches-takes-one-to-know-one/music/">The
+                            Beaches - "Takes One To Know One"</a>: This song has been stuck in my
+                            head for a few days.</p>
+                    </li>
+                    <li>
+                        <p>🐍 <a
+                                href="https://labs.quansight.org/blog/free-threaded-python-rollout">Free-threaded
+                            CPython is ready to experiment with! @ Quantsight</a>: The <a
+                                href="https://en.wikipedia.org/wiki/Global_interpreter_lock">
+                                GIL</a>, the bane of some Python dev's existence, is becoming <a
+                                href="https://peps.python.org/pep-0703/">optional</a>. From PEP-703:</p>
+                    </li>
+                </ul>
+                <blockquote>
+                    <p>The GIL is a major obstacle to concurrency. For scientific computing
+                        tasks, this lack of concurrency is often a bigger issue than speed
+                        of executing Python code, since most of the processor cycles are
+                        spent in optimized CPU or GPU kernels. The GIL introduces a global
+                        bottleneck that can prevent other threads from making progress if
+                        they call any Python code.</p>
+                </blockquote>
+                <p>From the article, looks like the major hurdles are to try to get
+                    C-related stuff to play nice. It will be nice having this option since,
+                    as the article notes, CPUs are currently better at scaling horizontally
+                    (more cores) than vertically (better, faster cores).</p>
+                <ul>
+                    <li>
+                        <p>🐍 <a
+                                href="https://www.stuartellis.name/articles/python-modern-practices/">Modern
+                            Good Practices for Python Development</a>: A non-exaustive, opinionated
+                            list of best practices for Python dev. The only one I felt was
+                            surprising was to use an <a
+                                href="https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/">src
+                            layout over a flat layout</a>. I've honestly never thought about it and
+                            didn't know there <em>was</em> a reason to use one over the other.</p>
+                    </li>
+                    <li>
+                        <p>🎸 <a
+                                href="https://www.stereogum.com/2268901/charli-xcx-girl-so-confusing-remix-feat-lorde/music/">Charli
+                            xcx - “The girl, so confusing version with lorde”
+</a>:
+                            Is there beef between Charli XCX and Lorde? I dunno, but this song is a
+                            banger.</p>
+                    </li>
+                </ul>
+            </div>
+
+        </content>
+    </entry>
+</feed>

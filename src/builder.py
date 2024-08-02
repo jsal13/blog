@@ -1,6 +1,7 @@
 import glob
 import os
 import re
+import shutil
 from pathlib import Path
 
 import attrs
@@ -130,3 +131,6 @@ if __name__ == "__main__":
     converter: Converter = Converter(file_paths=file_paths)
     converter.convert_all_md_to_html()
     converter.create_index_html()
+
+    # Copy feed file.
+    shutil.copyfile("feed.atom", "./html/feed.atom")
