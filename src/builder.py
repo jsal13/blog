@@ -57,6 +57,7 @@ class Converter:
                 (r"{{ content }}", html_body),
                 (r"{{ title }}", title),
                 (r"{{ title_matter }}", ""),
+                (r"{{ header_content }}", ""),
             ]
 
             html: str = template.read()
@@ -109,6 +110,14 @@ class Converter:
                     + "\n\n"
                     + "<p>Links & whatnot to things that seem pretty cool.</p>"
                 ),
+            ),
+            (
+                r"{{ header_content }}",
+                """
+                <!-- RSS -->
+                <link rel=alternate title="JSalv Blog"
+                type=application/atom+xml href="/feed.atom">
+                """,
             ),
         ]
 
