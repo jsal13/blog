@@ -43,11 +43,14 @@ class Converter:
             dest_path.open(mode="w+", encoding="utf-8") as dest,
             TEMPLATE_PATH.open("r", encoding="utf-8") as template,
         ):
-            # REF: https://python-markdown.github.io/extensions/code_hilite/#setup
             source_content: str = source.read()
             title: str = re.findall("^# (.*)", source_content)[0]
-            # post_id = re.findall("<!-- ID: (\d+) -->", source_content)[0]
             post_id: str = source_path_obj.name
+
+            # Remove the new line at the end of the language- tags for Prism.
+            pattern: str = r"(<pre><code class=\"language-.+?>)\s+"
+            source_content = re.sub(pattern, r"\1", source_content, flags=re.MULTILINE)
+
             html_body: str = markdown.markdown(
                 source_content,
                 extensions=EXTENSIONS,

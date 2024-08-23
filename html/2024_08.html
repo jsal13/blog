@@ -11,9 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap"
         rel="stylesheet">
 
-    <!-- CUSTOM CSS -->
+    
+    <!-- PRISM -->
+
+
+    <!-- CSS -->
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/pygmentize.css">
+    <link rel="stylesheet" href="../css/prism.css"/>
 
     <!-- MathJax -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
@@ -23,7 +27,8 @@
 
 </head>
 
-<body>
+<body class="line-numbers">
+<!-- `line-numbers` is for Prism global formatting. -->
 
     
 
@@ -55,10 +60,10 @@ Python :: 🐍
 <blockquote>
 <p>This macro returns the sql required to build a date spine. The spine will include the start_date (if it is aligned to the datepart), but it will not include the end_date.</p>
 </blockquote>
-<pre class="codehilite"><code class="language-sql linenums">{{ dbt_utils.date_spine(
-    datepart=&quot;day&quot;,
-    start_date=&quot;cast('2019-01-01' as date)&quot;,
-    end_date=&quot;cast('2020-01-01' as date)&quot;
+<pre><code class="language-python">{{ dbt_utils.date_spine(
+    datepart="day",
+    start_date="cast('2019-01-01' as date)",
+    end_date="cast('2020-01-01' as date)"
    )
 }}
 </code></pre>
@@ -72,6 +77,9 @@ Python :: 🐍
 </li>
 </ul>
     </div>
+
+    <!-- PRISM -->
+    <script src="../js/prism.js"></script>
 </body>
 
 </html>

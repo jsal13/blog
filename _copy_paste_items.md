@@ -6,10 +6,10 @@
 Last Updated: _2024-04-22_
 
 <!-- CODE BLOCKS -->
-```python
+<pre><code class="language-python">
 for i in range(10):
     print(i)
-```
+</code></pre>
 
 <!-- FIGURES -->
 
