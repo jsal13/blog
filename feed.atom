@@ -5,7 +5,7 @@
     <link rel="alternate" href="https://jsalv.com/" />
     <link rel="self" href="https://jsalv.com/blog/" />
     <!-- Update this each time we update a post. -->
-    <updated>2024-08-02T00:00:00-06:00</updated>
+    <updated>2024-08-31T00:00:00-06:00</updated>
     <author>
         <name>James Salvatore</name>
     </author>
@@ -187,4 +187,82 @@ Python :: 🐍
 
         </content>
     </entry>
+    <entry>
+        <title>August 2024 Aggregated</title>
+        <link rel="alternate" type="text/html" href="{{ENTRY.HTML_URL}}" />
+        <id>https://jsalv.com/blog/html/2024_07.html</id>
+        <published>2024-08-31T00:00:00-06:00</published>
+        <updated>2024-08-31T00:00:00-06:00</updated>
+        <content type="html">
+        <div id="post-content">
+        <h1 id="august-2024">August 2024</h1>
+        <p>The weather is warm but the links are <em>cool</em>. Hope you find something neat here!</p>
+        <h2 id="links">Links</h2>
+        <!-- 
+Music :: 🎸
+Data :: 📊
+General Software :: 💻
+Papers :: 📝
+Math :: 🧮
+Dance :: 💃
+Python :: 🐍
+Writing & Editing :: ✏️
+ -->
+
+        <ul>
+            <li>
+                <p>🎸 <a href="https://youtu.be/ut7VtQGJHzE?si=KVXzfMSJ9zDdOuVQ">Jordana - Like A Dog (Official Music
+                        Video)</a>: Jordana's bedroom-pop feel and <em>weird energy</em> make this a delight to listen
+                    to. Love it.</p>
+            </li>
+            <li>
+                <p>🎸 <a href="https://www.youtube.com/watch?v=CBJudzjpi1w">Billy Strings - Leadfoot</a>: Famed
+                    bluegrasser and master banjo finger-picker Billy Strings put out a new song it's catchy as hell. Big
+                    Primus energy.</p>
+            </li>
+            <li>
+                <p>📊 <a href="https://github.com/dbt-labs/dbt-utils#date_spine-source">DBT Docs: Data Spine</a>: An
+                    incredible boon that I learned about recently. From the docs,</p>
+            </li>
+        </ul>
+        <blockquote>
+            <p>This macro returns the sql required to build a date spine. The spine will include the start_date (if it
+                is aligned to the datepart), but it will not include the end_date.</p>
+        </blockquote>
+        <pre><code class="language-python">{{ dbt_utils.date_spine(
+    datepart="day",
+    start_date="cast('2019-01-01' as date)",
+    end_date="cast('2020-01-01' as date)"
+   )
+}}
+</code></pre>
+
+        <ul>
+            <li>
+                <p>📊 <a href="https://www.getdbt.com/blog/write-better-sql-a-defense-of-group-by-1">DBT Blog: In
+                        defense of group by 1</a>: An interesting argument for the use of <code>group by 1</code>
+                    instead of using column names.</p>
+            </li>
+            <li>
+                <p>🎸 <a
+                        href="https://www.notreble.com/buzz/2024/08/19/ulysses-owens-jr-generation-y-heart-shaped-box-jazz-cover/">Ulysses
+                        Owens Jr. &amp; Generation Y: “Heart-Shaped Box” (Jazz Cover)</a>: Going from first listen of a
+                    song to a jazz cover in like a minute. Incredible.</p>
+            </li>
+            <li>
+                <p>✏️ <a
+                        href="https://www.annemini.com/2009/01/05/what-do-you-mean-most-submissions-are-rejected-on-page-1-isnt-that-a-triflejudgmental/revision-to-improve-your-books-chances/agency-screeners-pet-peeves-of-the-notorious-variety/">What
+                        do you mean, most submissions are rejected on page 1? Isn’t that a trifle…judgmental?</a>: If
+                    you've critiqued or gotten critiques on writing these things will be familiar to you. This is a
+                    great read to know what people scoff at in the traditional publishing industry. A lot of it it is
+                    <em>very</em> specific to trad publishing but there's a lot in there that is useful even for the
+                    amateur or self-pub author. I dig it.</p>
+            </li>
+        </ul>
+    </div>        
+                
+
+        </content>
+    </entry>
+
 </feed>
